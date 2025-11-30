@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
+import { AuthService } from '@/services'
 import { getCookie, removeCookie, setCookie } from '@/utils/cookies'
 
 interface GitHubUser {
@@ -10,8 +11,6 @@ interface GitHubUser {
   email: string
   public_repos: number
 }
-
-const API_BASE_URL = 'http://localhost:8000'
 
 export const useAuthStore = defineStore('auth', () => {
   // Access token (cookie de sessão - expira rápido)
@@ -60,24 +59,10 @@ export const useAuthStore = defineStore('auth', () => {
     isRefreshing.value = true
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/token/refresh/`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          refresh: refreshToken.value,
-        }),
-      })
+      const response = await AuthService.refreshToken(refreshToken.value)
+      const data = response
 
-      if (!response.ok) {
-        throw new Error('Falha ao renovar token')
-      }
-
-      const data = await response.json()
-
-      accessToken.value = data.access
+      accessToken.value = data?.access
       setCookie('access_token', data.access, {
         days: 0.01,
         secure: true,
@@ -94,70 +79,13 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  const apiRequest = async (
-    url: string,
-    options: RequestInit = {},
-  ): Promise<Response> => {
-    if (!accessToken.value) {
-      throw new Error('Não autenticado')
-    }
-    const response = await fetch(url, {
-      ...options,
-      credentials: 'include',
-      headers: {
-        ...options.headers,
-        Authorization: `Bearer ${accessToken.value}`,
-      },
-    })
-
-    if (response.status === 401) {
-      const refreshed = await refreshAccessToken()
-
-      if (refreshed) {
-        return fetch(url, {
-          ...options,
-          credentials: 'include',
-          headers: {
-            ...options.headers,
-            Authorization: `Bearer ${accessToken.value}`,
-          },
-        })
-      } else {
-        throw new Error('Sessão expirada')
-      }
-    }
-
-    return response
+  const login = () => {
+    return AuthService.login()
   }
 
-  const fetchUser = async () => {
-    if (!accessToken.value) {
-      error.value = 'Token não encontrado'
-      return false
-    }
-
-    loading.value = true
-    error.value = null
-
-    try {
-      const response = await apiRequest(`${API_BASE_URL}/api/auth/users/me/`)
-
-      if (!response.ok) {
-        throw new Error('Falha ao buscar dados do usuário')
-      }
-
-      user.value = await response.json()
-      return true
-    } catch (error_) {
-      error.value
-        = error_ instanceof Error ? error_.message : 'Erro ao buscar usuário'
-      if (error_ instanceof Error && error_.message === 'Sessão expirada') {
-        clearTokens()
-      }
-      return false
-    } finally {
-      loading.value = false
-    }
+  const getMe = async () => {
+    const reponse = await AuthService.me()
+    user.value = reponse.data
   }
 
   const logout = () => {
@@ -174,8 +102,8 @@ export const useAuthStore = defineStore('auth', () => {
     setTokens,
     clearTokens,
     refreshAccessToken,
-    apiRequest,
-    fetchUser,
+    getMe,
     logout,
+    login,
   }
 })

@@ -46,20 +46,55 @@
 
       <v-row>
         <v-col cols="12" md="8">
+          <!-- Card de Progresso da Task -->
+          <v-card
+            v-if="
+              appStore.currentApp.task_id &&
+                (appStore.currentApp.status === 'STARTING' ||
+                  appStore.currentApp.status === 'DELETING')
+            "
+            class="mb-4"
+            :color="
+              appStore.currentApp.status === 'DELETING' ? 'pink' : 'primary'
+            "
+            variant="tonal"
+          >
+            <v-card-title class="d-flex align-center">
+              <v-icon class="mr-2 mdi-spin">mdi-loading</v-icon>
+              {{
+                appStore.currentApp.status === "DELETING"
+                  ? "Deletando App..."
+                  : "Criando App..."
+              }}
+            </v-card-title>
+            <v-card-text>
+              <div v-if="appStore.taskStatus" class="mb-2">
+                <div class="d-flex justify-space-between mb-1">
+                  <span>{{ appStore.taskStatus.status }}</span>
+                  <span>{{ appStore.taskStatus.current }}%</span>
+                </div>
+                <v-progress-linear
+                  :color="
+                    appStore.currentApp.status === 'DELETING'
+                      ? 'pink'
+                      : 'primary'
+                  "
+                  height="8"
+                  :model-value="appStore.taskStatus.current"
+                  rounded
+                />
+              </div>
+              <div v-else class="text-center">
+                <v-progress-circular indeterminate size="24" />
+                <span class="ml-2">Carregando progresso...</span>
+              </div>
+            </v-card-text>
+          </v-card>
+
           <v-card class="mb-4">
             <v-card-title>Detalhes do App</v-card-title>
             <v-card-text>
               <v-list>
-                <v-list-item>
-                  <template #prepend>
-                    <v-icon>mdi-identifier</v-icon>
-                  </template>
-                  <v-list-item-title>ID</v-list-item-title>
-                  <v-list-item-subtitle>{{
-                    appStore.currentApp.id
-                  }}</v-list-item-subtitle>
-                </v-list-item>
-
                 <v-list-item>
                   <template #prepend>
                     <v-icon>mdi-git</v-icon>
@@ -86,13 +121,13 @@
                   <template #prepend>
                     <v-icon>mdi-web</v-icon>
                   </template>
-                  <v-list-item-title>Domínio</v-list-item-title>
+                  <v-list-item-title>URL do App</v-list-item-title>
                   <v-list-item-subtitle>
                     <a
-                      :href="`https://${appStore.currentApp.domain}`"
+                      :href="getAppUrl(appStore.currentApp.domain)"
                       target="_blank"
                     >
-                      {{ appStore.currentApp.domain }}
+                      {{ getAppUrl(appStore.currentApp.domain) }}
                       <v-icon size="small">mdi-open-in-new</v-icon>
                     </a>
                   </v-list-item-subtitle>
@@ -105,26 +140,6 @@
                   <v-list-item-title>Porta</v-list-item-title>
                   <v-list-item-subtitle>{{
                     appStore.currentApp.port
-                  }}</v-list-item-subtitle>
-                </v-list-item>
-
-                <v-list-item v-if="appStore.currentApp.name_dokku">
-                  <template #prepend>
-                    <v-icon>mdi-server</v-icon>
-                  </template>
-                  <v-list-item-title>Nome Dokku</v-list-item-title>
-                  <v-list-item-subtitle>{{
-                    appStore.currentApp.name_dokku
-                  }}</v-list-item-subtitle>
-                </v-list-item>
-
-                <v-list-item v-if="appStore.currentApp.task_id">
-                  <template #prepend>
-                    <v-icon>mdi-clipboard-list</v-icon>
-                  </template>
-                  <v-list-item-title>Task ID</v-list-item-title>
-                  <v-list-item-subtitle>{{
-                    appStore.currentApp.task_id
                   }}</v-list-item-subtitle>
                 </v-list-item>
 
@@ -148,6 +163,72 @@
                   }}</v-list-item-subtitle>
                 </v-list-item>
               </v-list>
+            </v-card-text>
+          </v-card>
+
+          <!-- Preview do App -->
+          <v-card
+            v-if="
+              appStore.currentApp.domain &&
+                appStore.currentApp.status === 'RUNNING'
+            "
+            class="mb-4"
+          >
+            <v-card-title class="d-flex justify-space-between align-center">
+              <span>
+                <v-icon class="mr-2">mdi-monitor</v-icon>
+                Preview
+              </span>
+              <div>
+                <v-btn icon size="small" variant="text" @click="refreshIframe">
+                  <v-icon>mdi-refresh</v-icon>
+                </v-btn>
+                <v-btn
+                  :href="getAppUrl(appStore.currentApp.domain)"
+                  icon
+                  size="small"
+                  target="_blank"
+                  variant="text"
+                >
+                  <v-icon>mdi-open-in-new</v-icon>
+                </v-btn>
+              </div>
+            </v-card-title>
+            <v-card-text class="pa-0">
+              <div class="iframe-container">
+                <iframe
+                  :key="iframeKey"
+                  allowfullscreen
+                  class="app-iframe"
+                  :src="getAppUrl(appStore.currentApp.domain)"
+                  title="App Preview"
+                />
+              </div>
+            </v-card-text>
+          </v-card>
+
+          <!-- Mensagem quando não há preview -->
+          <v-card
+            v-else-if="
+              !appStore.currentApp.domain ||
+                appStore.currentApp.status !== 'RUNNING'
+            "
+            class="mb-4"
+          >
+            <v-card-title>
+              <v-icon class="mr-2">mdi-monitor-off</v-icon>
+              Preview
+            </v-card-title>
+            <v-card-text class="text-center py-8">
+              <v-icon class="mb-2" color="grey" size="64">mdi-web-off</v-icon>
+              <p class="text-grey">
+                <template v-if="!appStore.currentApp.domain">
+                  O app ainda não possui uma URL configurada.
+                </template>
+                <template v-else>
+                  O app precisa estar rodando para exibir o preview.
+                </template>
+              </p>
             </v-card-text>
           </v-card>
 
@@ -229,13 +310,26 @@
           <v-card class="mb-4">
             <v-card-title>Ações</v-card-title>
             <v-card-text>
+              <!-- Alerta quando está deletando -->
+              <v-alert
+                v-if="appStore.currentApp.status === 'DELETING'"
+                class="mb-4"
+                color="pink"
+                icon="mdi-delete-clock"
+                type="warning"
+                variant="tonal"
+              >
+                Este app está sendo deletado...
+              </v-alert>
+
               <v-btn
                 block
                 class="mb-2"
                 color="success"
                 :disabled="
-                  appStore.currentApp.status === 'running' ||
-                    appStore.currentApp.status === 'starting'
+                  appStore.currentApp.status === 'RUNNING' ||
+                    appStore.currentApp.status === 'STARTING' ||
+                    appStore.currentApp.status === 'DELETING'
                 "
                 prepend-icon="mdi-rocket-launch"
               >
@@ -245,7 +339,7 @@
                 block
                 class="mb-2"
                 color="warning"
-                :disabled="appStore.currentApp.status !== 'running'"
+                :disabled="appStore.currentApp.status !== 'RUNNING'"
                 prepend-icon="mdi-restart"
               >
                 Restart
@@ -253,7 +347,10 @@
               <v-btn
                 block
                 class="mb-2"
-                :disabled="appStore.currentApp.status === 'stopped'"
+                :disabled="
+                  appStore.currentApp.status === 'STOPPED' ||
+                    appStore.currentApp.status === 'DELETING'
+                "
                 prepend-icon="mdi-stop"
                 variant="outlined"
               >
@@ -263,8 +360,8 @@
                 block
                 class="mb-2"
                 prepend-icon="mdi-file-document"
-                :to="`/projects/${projectId}/${appId}/logs`"
                 variant="outlined"
+                @click="showLogsDialog = true"
               >
                 Ver Logs
               </v-btn>
@@ -272,6 +369,7 @@
               <v-btn
                 block
                 color="error"
+                :disabled="appStore.currentApp.status === 'DELETING'"
                 prepend-icon="mdi-delete"
                 variant="outlined"
                 @click="confirmDelete = true"
@@ -288,7 +386,7 @@
               <v-btn
                 block
                 color="primary"
-                :href="`https://${appStore.currentApp.domain}`"
+                :href="getAppUrl(appStore.currentApp.domain)"
                 prepend-icon="mdi-open-in-new"
                 target="_blank"
                 variant="tonal"
@@ -358,13 +456,46 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Dialog de Logs -->
+    <v-dialog
+      v-model="showLogsDialog"
+      fullscreen
+      transition="dialog-bottom-transition"
+    >
+      <v-card>
+        <v-toolbar color="primary">
+          <v-btn icon @click="showLogsDialog = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+          <v-toolbar-title>Logs - {{ appStore.currentApp?.name }}</v-toolbar-title>
+          <v-spacer />
+          <v-btn icon @click="refreshLogs">
+            <v-icon>mdi-refresh</v-icon>
+          </v-btn>
+        </v-toolbar>
+        <v-card-text class="pa-4">
+          <LogViewer
+            :has-more="logStore.hasMore"
+            :loading="logStore.loading"
+            :logs="logStore.logs"
+            :task-id="appStore.currentApp?.task_id || undefined"
+            title="Logs da Aplicação"
+            @load-more="loadMoreLogs"
+            @stream-logs="handleStreamLogs"
+          />
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
 <script setup lang="ts">
-  import { onMounted, ref } from 'vue'
+  import { onMounted, onUnmounted, ref, watch } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
-  import { useAppStore } from '@/stores'
+
+  import LogViewer from '@/components/logs/LogViewer.vue'
+  import { useAppStore, useLogStore } from '@/stores'
 
   const route = useRoute()
   const router = useRouter()
@@ -372,6 +503,7 @@
   const appId = (route.params as { appId: string }).appId || ''
 
   const appStore = useAppStore()
+  const logStore = useLogStore()
   const loading = ref(true)
   const refreshing = ref(false)
   const showSecrets = ref(false)
@@ -379,23 +511,94 @@
   const savingEnvVar = ref(false)
   const confirmDelete = ref(false)
   const deleting = ref(false)
+  const showLogsDialog = ref(false)
   const newEnvVar = ref({ key: '', value: '' })
+  const iframeKey = ref(0)
+  const taskPollingInterval = ref<ReturnType<typeof setInterval> | null>(null)
 
   onMounted(async () => {
     try {
       await appStore.fetchApp(appId)
+      // Se há task em andamento, inicia polling
+      startTaskPollingIfNeeded()
     } finally {
       loading.value = false
     }
   })
 
+  onUnmounted(() => {
+    stopTaskPolling()
+  })
+
+  // Watch para iniciar/parar polling quando status mudar
+  watch(
+    () => appStore.currentApp?.status,
+    newStatus => {
+      if (newStatus === 'STARTING' || newStatus === 'DELETING') {
+        startTaskPollingIfNeeded()
+      } else {
+        stopTaskPolling()
+        appStore.clearTaskStatus()
+      }
+    },
+  )
+
+  function startTaskPollingIfNeeded () {
+    const app = appStore.currentApp
+    if (
+      !app?.task_id
+      || (app.status !== 'STARTING' && app.status !== 'DELETING')
+    ) {
+      return
+    }
+
+    // Limpa interval anterior se existir
+    stopTaskPolling()
+
+    // Busca status imediatamente
+    pollTaskStatus()
+
+    // Inicia polling a cada 2 segundos
+    taskPollingInterval.value = setInterval(pollTaskStatus, 2000)
+  }
+
+  function stopTaskPolling () {
+    if (taskPollingInterval.value) {
+      clearInterval(taskPollingInterval.value)
+      taskPollingInterval.value = null
+    }
+  }
+
+  async function pollTaskStatus () {
+    try {
+      const status = await appStore.fetchAppStatus(appId)
+
+      // Se a task terminou (SUCCESS ou FAILURE), recarrega o app
+      if (status?.state === 'SUCCESS' || status?.state === 'FAILURE') {
+        stopTaskPolling()
+        await appStore.fetchApp(appId)
+      }
+    } catch (error_) {
+      console.error('Erro ao buscar status da task:', error_)
+    }
+  }
+
   async function refreshStatus () {
     refreshing.value = true
     try {
-      await appStore.fetchAppStatus(appId)
+      // Recarrega o app para ter os dados mais recentes
+      await appStore.fetchApp(appId)
+      // Se há task, busca o status também
+      if (appStore.currentApp?.task_id) {
+        await appStore.fetchAppStatus(appId)
+      }
     } finally {
       refreshing.value = false
     }
+  }
+
+  function refreshIframe () {
+    iframeKey.value++
   }
 
   async function addEnvVar () {
@@ -434,6 +637,30 @@
     }
   }
 
+  // Funções de logs
+  async function refreshLogs () {
+    if (appStore.currentApp?.id) {
+      await logStore.fetchLogsByApp(Number(appStore.currentApp.id))
+    }
+  }
+
+  async function loadMoreLogs () {
+    if (appStore.currentApp?.id) {
+      await logStore.loadMore({ app: Number(appStore.currentApp.id) })
+    }
+  }
+
+  async function handleStreamLogs (taskId: string, afterId?: number) {
+    await logStore.streamLogs(taskId, afterId)
+  }
+
+  // Watch para carregar logs quando o dialog abrir
+  watch(showLogsDialog, async newVal => {
+    if (newVal && appStore.currentApp?.id) {
+      await logStore.fetchLogsByApp(Number(appStore.currentApp.id))
+    }
+  })
+
   function formatDate (dateString?: string) {
     if (!dateString) {
       return '-'
@@ -447,23 +674,52 @@
     })
   }
 
+  function getAppUrl (domain?: string | null): string {
+    if (!domain) return ''
+    // Se já tem protocolo, retorna como está
+    if (domain.startsWith('http://') || domain.startsWith('https://')) {
+      return domain
+    }
+    // Adiciona https://
+    return `https://${domain}`
+  }
+
   function getStatusColor (status?: string) {
     const colors: Record<string, string> = {
-      running: 'success',
-      stopped: 'grey',
-      error: 'error',
-      starting: 'warning',
+      RUNNING: 'success',
+      STOPPED: 'grey',
+      ERROR: 'error',
+      STARTING: 'warning',
+      DELETING: 'pink',
     }
-    return colors[status || 'stopped'] || 'grey'
+    return colors[status || 'STOPPED'] || 'grey'
   }
 
   function getStatusIcon (status?: string) {
     const icons: Record<string, string> = {
-      running: 'mdi-check-circle',
-      stopped: 'mdi-stop-circle',
-      error: 'mdi-alert-circle',
-      starting: 'mdi-loading',
+      RUNNING: 'mdi-check-circle',
+      STOPPED: 'mdi-stop-circle',
+      ERROR: 'mdi-alert-circle',
+      STARTING: 'mdi-loading',
+      DELETING: 'mdi-delete-clock',
     }
-    return icons[status || 'stopped'] || 'mdi-circle'
+    return icons[status || 'STOPPED'] || 'mdi-circle'
   }
 </script>
+
+<style scoped>
+.iframe-container {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  background: #1e1e1e;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.app-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #fff;
+}
+</style>

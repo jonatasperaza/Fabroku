@@ -116,7 +116,21 @@
         >
           {{ log.category }}
         </v-chip>
-        <span class="log-message">{{ log.message }}</span>
+        <div class="log-message">
+          <template
+            v-for="(line, idx) in formatLogMessage(log.message)"
+            :key="idx"
+          >
+            <div
+              :class="{
+                'log-line-arrow':
+                  line.startsWith('----->') || line.startsWith('=====>'),
+              }"
+            >
+              {{ line }}
+            </div>
+          </template>
+        </div>
         <v-progress-linear
           v-if="log.progress !== undefined && log.progress > 0"
           class="mt-1"
@@ -244,6 +258,38 @@
     })
   }
 
+  function formatLogMessage (message: string): string[] {
+    // Remove caracteres de controle ANSI como [1G
+    const cleaned = message.replace(/\[1G/g, '')
+
+    // Quebra pelos marcadores do Dokku (-----> e =====>)
+    // Mantém o marcador junto com a linha
+    const lines = cleaned
+      .split(/(----->|=====>)/)
+      .reduce((acc: string[], part, index, arr) => {
+        const trimmed = part.trim()
+        if (!trimmed) return acc
+
+        // Se é um marcador, junta com a próxima parte
+        if (trimmed === '----->' || trimmed === '=====>') {
+          const nextPart = arr[index + 1]?.trim() || ''
+          if (nextPart) {
+            acc.push(`${trimmed} ${nextPart}`)
+          }
+        } else if (
+          index === 0
+          || (arr[index - 1] !== '----->' && arr[index - 1] !== '=====>')
+        ) {
+          // Se não é precedido por um marcador, adiciona como linha separada
+          acc.push(trimmed)
+        }
+        return acc
+      }, [])
+
+    // Se não conseguiu quebrar, retorna como uma única linha
+    return lines.length > 0 ? lines : [message]
+  }
+
   function scrollToBottom () {
     if (logsContainer.value) {
       logsContainer.value.scrollTop = logsContainer.value.scrollHeight
@@ -363,6 +409,19 @@
 }
 
 .log-message {
+  display: inline-block;
   word-break: break-word;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.log-line-arrow {
+  color: #10b981;
+  font-weight: 600;
+  margin-top: 8px;
+
+  &:first-child {
+    margin-top: 0;
+  }
 }
 </style>

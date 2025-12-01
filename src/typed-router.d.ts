@@ -26,6 +26,7 @@ declare module 'vue-router/auto-routes' {
     '/projects/[projectId]/': RouteRecordInfo<'/projects/[projectId]/', '/projects/:projectId', { projectId: ParamValue<true> }, { projectId: ParamValue<false> }>,
     '/projects/[projectId]/[appId]': RouteRecordInfo<'/projects/[projectId]/[appId]', '/projects/:projectId/:appId', { projectId: ParamValue<true>, appId: ParamValue<true> }, { projectId: ParamValue<false>, appId: ParamValue<false> }, '/projects/[projectId]/[appId]/logs'>,
     '/projects/[projectId]/[appId]/logs': RouteRecordInfo<'/projects/[projectId]/[appId]/logs', '/projects/:projectId/:appId/logs', { projectId: ParamValue<true>, appId: ParamValue<true> }, { projectId: ParamValue<false>, appId: ParamValue<false> }>,
+    '/projects/[projectId]/apps/[appId]/logs': RouteRecordInfo<'/projects/[projectId]/apps/[appId]/logs', '/projects/:projectId/apps/:appId/logs', { projectId: ParamValue<true>, appId: ParamValue<true> }, { projectId: ParamValue<false>, appId: ParamValue<false> }>,
     '/settings/': RouteRecordInfo<'/settings/', '/settings', Record<never, never>, Record<never, never>>,
   }
 
@@ -70,6 +71,10 @@ declare module 'vue-router/auto-routes' {
     }
     'src/pages/projects/[projectId]/[appId]/logs.vue': {
       routes: '/projects/[projectId]/[appId]/logs'
+      views: never
+    }
+    'src/pages/projects/[projectId]/apps/[appId]/logs.vue': {
+      routes: '/projects/[projectId]/apps/[appId]/logs'
       views: never
     }
     'src/pages/settings/index.vue': {

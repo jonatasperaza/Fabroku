@@ -1,4 +1,4 @@
-import type { App } from '@/interfaces'
+import type { App, TaskStatus } from '@/interfaces'
 
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
@@ -8,6 +8,7 @@ import AppsService from '@/services/apps'
 export const useAppStore = defineStore('app', () => {
   const apps = ref<App[]>([])
   const currentApp = ref<App | null>(null)
+  const taskStatus = ref<TaskStatus | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
 
@@ -108,23 +109,22 @@ export const useAppStore = defineStore('app', () => {
     }
   }
 
-  // Buscar status do app
-  const fetchAppStatus = async (appId: string) => {
+  // Buscar status da task do app (progresso de criação/deploy)
+  const fetchAppStatus = async (appId: string): Promise<TaskStatus | null> => {
     try {
-      const app = await AppsService.getAppStatus(appId)
-      // Atualiza o app na lista e o currentApp
-      const index = apps.value.findIndex(a => String(a.id) === appId)
-      if (index !== -1) {
-        apps.value[index] = app
-      }
-      if (String(currentApp.value?.id) === appId) {
-        currentApp.value = app
-      }
-      return app
+      const status = await AppsService.getAppStatus(appId)
+      taskStatus.value = status
+      return status
     } catch (error_) {
       console.error('Erro ao buscar status:', error_)
+      taskStatus.value = null
       throw error_
     }
+  }
+
+  // Limpar status da task
+  const clearTaskStatus = () => {
+    taskStatus.value = null
   }
 
   // Buscar apps por projeto
@@ -141,11 +141,13 @@ export const useAppStore = defineStore('app', () => {
   return {
     apps,
     currentApp,
+    taskStatus,
     loading,
     error,
     fetchApps,
     fetchApp,
     fetchAppStatus,
+    clearTaskStatus,
     createApp,
     updateApp,
     deleteApp,

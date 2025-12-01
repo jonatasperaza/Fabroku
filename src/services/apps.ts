@@ -1,4 +1,4 @@
-import type { App, Response } from '@/interfaces'
+import type { App, Response, TaskStatus } from '@/interfaces'
 
 import apiClient from '@/plugins/axios'
 
@@ -32,7 +32,7 @@ class AppsService {
     await apiClient.delete(`/apps/apps/${id}/`)
   }
 
-  async getAppStatus (id: string): Promise<App> {
+  async getAppStatus (id: string): Promise<TaskStatus> {
     const response = await apiClient.get(`/apps/apps/${id}/get_app_status/`)
     return response.data
   }

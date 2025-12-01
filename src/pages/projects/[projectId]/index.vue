@@ -199,22 +199,24 @@
 
   function getStatusColor (status?: string) {
     const colors: Record<string, string> = {
-      running: 'success',
-      stopped: 'grey',
-      error: 'error',
-      starting: 'warning',
+      RUNNING: 'success',
+      STOPPED: 'grey',
+      ERROR: 'error',
+      STARTING: 'warning',
+      DELETING: 'pink',
     }
-    return colors[status || 'stopped'] || 'grey'
+    return colors[status || 'STOPPED'] || 'grey'
   }
 
   function getStatusIcon (status?: string) {
     const icons: Record<string, string> = {
-      running: 'mdi-check-circle',
-      stopped: 'mdi-stop-circle',
-      error: 'mdi-alert-circle',
-      starting: 'mdi-loading',
+      RUNNING: 'mdi-check-circle',
+      STOPPED: 'mdi-stop-circle',
+      ERROR: 'mdi-alert-circle',
+      STARTING: 'mdi-loading',
+      DELETING: 'mdi-delete-clock',
     }
-    return icons[status || 'stopped'] || 'mdi-circle'
+    return icons[status || 'STOPPED'] || 'mdi-circle'
   }
 
   async function handleCreateApp () {

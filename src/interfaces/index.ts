@@ -29,12 +29,20 @@ interface App {
   project: Project['id']
   created_at?: string
   updated_at?: string
-  status?: 'stopped' | 'running' | 'error' | 'starting'
+  status?: 'STOPPED' | 'RUNNING' | 'ERROR' | 'STARTING' | 'DELETING'
   domain?: string | null
   port?: number | null
   variables?: Record<string, string> | object
   task_id?: string | null
   name_dokku?: string | null
+}
+
+interface TaskStatus {
+  task_id: string
+  state: 'PENDING' | 'PROGRESS' | 'SUCCESS' | 'FAILURE'
+  current: number
+  total: number
+  status: string
 }
 
 type LogLevel = 'DEBUG' | 'INFO' | 'WARNING' | 'ERROR' | 'SUCCESS' | 'DOKKU'
@@ -82,5 +90,6 @@ export type {
   LogLevel,
   Project,
   Response,
+  TaskStatus,
   User,
 }

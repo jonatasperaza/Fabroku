@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import apiClient from '@/plugins/axios'
 
 interface GitHubUser {
+  id: number
   login: string
   name: string
   avatar_url: string

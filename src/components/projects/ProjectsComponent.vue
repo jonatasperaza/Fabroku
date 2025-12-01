@@ -75,23 +75,106 @@
     </v-row>
 
     <!-- Dialog Criar Projeto -->
-    <v-dialog v-model="dialogCreate" max-width="500">
+    <v-dialog v-model="dialogCreate" max-width="600">
       <v-card>
         <v-card-title>Novo Projeto</v-card-title>
         <v-card-text>
           <v-text-field
             v-model="newProject.name"
             autofocus
+            class="mb-4"
             label="Nome do Projeto"
             required
             variant="outlined"
           />
+
+          <!-- Seleção de Equipe -->
+          <div class="mb-2 text-subtitle-2">Equipe do Projeto</div>
+
+          <!-- Usuário atual (sempre incluído) -->
+          <v-chip
+            v-if="authStore.user"
+            class="mb-3"
+            color="primary"
+            prepend-icon="mdi-account-check"
+          >
+            <v-avatar size="24" start>
+              <v-img :src="authStore.user.avatar_url" />
+            </v-avatar>
+            {{ authStore.user.login }} (você)
+          </v-chip>
+
+          <!-- Busca de usuários -->
+          <v-autocomplete
+            v-model="selectedUsers"
+            v-model:search="searchQuery"
+            chips
+            clearable
+            closable-chips
+            hide-no-data
+            hide-selected
+            item-title="username"
+            item-value="id"
+            :items="searchResults"
+            label="Adicionar membros (buscar por username do GitHub)"
+            :loading="searching"
+            multiple
+            placeholder="Digite o username do GitHub..."
+            return-object
+            variant="outlined"
+            @update:search="handleSearch"
+          >
+            <template #chip="{ item, props: chipProps }">
+              <v-chip v-bind="chipProps">
+                <v-avatar size="24" start>
+                  <v-img :src="item.raw.avatar_url" />
+                </v-avatar>
+                {{ item.raw.username }}
+              </v-chip>
+            </template>
+            <template #item="{ item, props: itemProps }">
+              <v-list-item v-bind="itemProps">
+                <template #prepend>
+                  <v-avatar size="32">
+                    <v-img :src="item.raw.avatar_url" />
+                  </v-avatar>
+                </template>
+                <v-list-item-title>{{ item.raw.username }}</v-list-item-title>
+                <v-list-item-subtitle v-if="item.raw.name">
+                  {{ item.raw.name }}
+                </v-list-item-subtitle>
+              </v-list-item>
+            </template>
+            <template #no-data>
+              <v-list-item v-if="searchQuery && searchQuery.length >= 2">
+                <v-list-item-title>
+                  Nenhum usuário encontrado para "{{ searchQuery }}"
+                </v-list-item-title>
+              </v-list-item>
+              <v-list-item v-else>
+                <v-list-item-title>
+                  Digite pelo menos 2 caracteres para buscar
+                </v-list-item-title>
+              </v-list-item>
+            </template>
+          </v-autocomplete>
+
+          <v-alert
+            class="mt-2"
+            density="compact"
+            icon="mdi-information"
+            type="info"
+            variant="tonal"
+          >
+            Você será adicionado automaticamente ao projeto.
+          </v-alert>
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn variant="text" @click="dialogCreate = false">Cancelar</v-btn>
+          <v-btn variant="text" @click="closeDialog">Cancelar</v-btn>
           <v-btn
             color="primary"
+            :disabled="!newProject.name.trim()"
             :loading="creating"
             @click="handleCreateProject"
           >
@@ -104,16 +187,26 @@
 </template>
 
 <script setup lang="ts">
+  import type { User } from '@/interfaces'
+
   import { onMounted, ref } from 'vue'
-  import { useProjectStore } from '@/stores'
+
+  import { UsersService } from '@/services'
+  import { useAuthStore, useProjectStore } from '@/stores'
 
   const projectStore = useProjectStore()
+  const authStore = useAuthStore()
 
   const dialogCreate = ref(false)
   const creating = ref(false)
+  const searching = ref(false)
+  const searchQuery = ref('')
+  const searchResults = ref<User[]>([])
+  const selectedUsers = ref<User[]>([])
+  const searchTimeout = ref<ReturnType<typeof setTimeout> | null>(null)
+
   const newProject = ref({
     name: '',
-    users: [],
   })
 
   onMounted(() => {
@@ -125,17 +218,68 @@
     return new Date(dateString).toLocaleDateString('pt-BR')
   }
 
+  async function handleSearch (query: string) {
+    // Limpa o timeout anterior
+    if (searchTimeout.value) {
+      clearTimeout(searchTimeout.value)
+    }
+
+    // Precisa de pelo menos 2 caracteres
+    if (!query || query.length < 2) {
+      searchResults.value = []
+      return
+    }
+
+    // Debounce de 300ms
+    searchTimeout.value = setTimeout(async () => {
+      searching.value = true
+      try {
+        const results = await UsersService.searchByUsername(query)
+        // Filtra o usuário atual da lista de resultados
+        searchResults.value = results.filter(u => u.id !== authStore.user?.id)
+      } catch (error_) {
+        console.error('Erro ao buscar usuários:', error_)
+        searchResults.value = []
+      } finally {
+        searching.value = false
+      }
+    }, 300)
+  }
+
+  function closeDialog () {
+    dialogCreate.value = false
+    newProject.value.name = ''
+    selectedUsers.value = []
+    searchQuery.value = ''
+    searchResults.value = []
+  }
+
   async function handleCreateProject () {
     if (!newProject.value.name.trim()) return
 
     creating.value = true
     try {
+      // Monta a lista de IDs: usuário atual + selecionados
+      const userIds: number[] = []
+
+      // Adiciona o usuário atual primeiro
+      if (authStore.user?.id) {
+        userIds.push(authStore.user.id)
+      }
+
+      // Adiciona os usuários selecionados
+      for (const user of selectedUsers.value) {
+        if (user.id && !userIds.includes(user.id)) {
+          userIds.push(user.id)
+        }
+      }
+
       await projectStore.createProject({
         name: newProject.value.name,
-        users: [],
+        users: userIds,
       })
-      dialogCreate.value = false
-      newProject.value.name = ''
+
+      closeDialog()
     } catch (error_) {
       console.error('Erro ao criar projeto:', error_)
     } finally {

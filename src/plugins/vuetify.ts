@@ -13,7 +13,6 @@ import 'vuetify/styles'
 
 // https://vuetifyjs.com/en/introduction/why-vuetify/#feature-guides
 export default createVuetify({
-
   theme: {
     defaultTheme: 'dark',
     themes: {
@@ -25,16 +24,18 @@ export default createVuetify({
           'background': '#f6f6f8',
           'surface': '#ffffff',
           'text-muted': '#9d9db9',
+          'text-primary': '#000000',
         },
       },
       dark: {
         dark: true,
         colors: {
-          'primary': '#1313ec',
+          'primary': '#542ab4ff',
           'primary-hover': '#0f0fb8',
           'background': '#101022',
           'surface': '#1a1a2e',
           'text-muted': '#9d9db9',
+          'text-primary': '#ffffff',
         },
       },
     },

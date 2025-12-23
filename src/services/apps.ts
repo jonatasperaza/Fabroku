@@ -20,12 +20,12 @@ class AppsService {
     return response.data
   }
 
-  async createApp (data: Partial<App>): Promise<App> {
+  async createApp (data: App): Promise<App> {
     const response = await apiClient.post('/apps/apps/', data)
     return response.data
   }
 
-  async updateApp (id: string, data: Partial<App>): Promise<App> {
+  async updateApp (id: string, data: App): Promise<App> {
     const response = await apiClient.put(`/apps/apps/${id}/`, data)
     return response.data
   }

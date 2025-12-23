@@ -35,13 +35,6 @@ apiClient.interceptors.response.use(
       _retry?: boolean
     }
 
-    console.log('[Axios Interceptor] Erro:', {
-      status: error.response?.status,
-      url: originalRequest.url,
-      retry: originalRequest._retry,
-      data: error.response?.data,
-    })
-
     // Ignora se não for 401, já tentou retry, ou é a própria rota de refresh
     const isRefreshRoute = originalRequest.url?.includes('/auth/refresh')
     if (
@@ -52,10 +45,9 @@ apiClient.interceptors.response.use(
     ) {
       // Se for erro no refresh ou auth/check sem token, redireciona para login
       if (
-        (error.response?.status === 401 || error.response?.status === 400)
+        (error.response?.status === 401)
         && window.location.pathname !== '/'
       ) {
-        console.log('[Axios Interceptor] Redirecionando para /')
         window.location.href = '/'
         return new Promise(() => {})
       }
@@ -74,15 +66,12 @@ apiClient.interceptors.response.use(
     try {
       // Chama endpoint de refresh - o backend vai ler o refresh_token do cookie
       // e setar um novo access_token também via cookie
-      console.log('[Axios Interceptor] Tentando refresh...')
       await apiClient.post('/auth/refresh/')
-      console.log('[Axios Interceptor] Refresh OK!')
       processQueue(null)
 
       // Repete a requisição original - agora com o novo cookie
       return apiClient(originalRequest)
     } catch (refreshError) {
-      console.log('[Axios Interceptor] Refresh falhou:', refreshError)
       processQueue(refreshError as Error)
       isRefreshing = false
 

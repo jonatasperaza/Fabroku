@@ -72,7 +72,7 @@ export const useAppStore = defineStore('app', () => {
     loading.value = true
     error.value = null
     try {
-      const updatedApp = await AppsService.updateApp(appId, data)
+      const updatedApp = await AppsService.patchApp(appId, data)
       const index = apps.value.findIndex(a => String(a.id) === appId)
       if (index !== -1) {
         apps.value[index] = updatedApp

@@ -39,14 +39,6 @@
           <v-list-item
             class="menu-item"
             link
-            prepend-icon="mdi-cog-outline"
-            rounded="lg"
-            title="Configurações"
-            to="/settings"
-          />
-          <v-list-item
-            class="menu-item"
-            link
             prepend-icon="mdi-book-open-variant-outline"
             rounded="lg"
             title="Documentação"

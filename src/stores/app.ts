@@ -155,6 +155,75 @@ export const useAppStore = defineStore('app', () => {
     currentApp.value = null
   }
 
+  // Iniciar app
+  const startApp = async (appId: string) => {
+    loading.value = true
+    error.value = null
+    try {
+      const updatedApp = await AppsService.startApp(appId)
+      if (String(currentApp.value?.id) === appId) {
+        currentApp.value = updatedApp
+      }
+      const index = apps.value.findIndex(a => String(a.id) === appId)
+      if (index !== -1) {
+        apps.value[index] = updatedApp
+      }
+      return updatedApp
+    } catch (error_) {
+      error.value = 'Erro ao iniciar app'
+      console.error('Erro ao iniciar app:', error_)
+      throw error_
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Parar app
+  const stopApp = async (appId: string) => {
+    loading.value = true
+    error.value = null
+    try {
+      const updatedApp = await AppsService.stopApp(appId)
+      if (String(currentApp.value?.id) === appId) {
+        currentApp.value = updatedApp
+      }
+      const index = apps.value.findIndex(a => String(a.id) === appId)
+      if (index !== -1) {
+        apps.value[index] = updatedApp
+      }
+      return updatedApp
+    } catch (error_) {
+      error.value = 'Erro ao parar app'
+      console.error('Erro ao parar app:', error_)
+      throw error_
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Reiniciar app
+  const restartApp = async (appId: string) => {
+    loading.value = true
+    error.value = null
+    try {
+      const updatedApp = await AppsService.restartApp(appId)
+      if (String(currentApp.value?.id) === appId) {
+        currentApp.value = updatedApp
+      }
+      const index = apps.value.findIndex(a => String(a.id) === appId)
+      if (index !== -1) {
+        apps.value[index] = updatedApp
+      }
+      return updatedApp
+    } catch (error_) {
+      error.value = 'Erro ao reiniciar app'
+      console.error('Erro ao reiniciar app:', error_)
+      throw error_
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     apps,
     currentApp,
@@ -171,5 +240,8 @@ export const useAppStore = defineStore('app', () => {
     fetchAppsByProject,
     getAppsByProject,
     clearApps,
+    startApp,
+    stopApp,
+    restartApp,
   }
 })

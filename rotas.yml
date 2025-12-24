@@ -9,24 +9,15 @@ paths:
       operationId: root_retrieve
       security:
       - jwtAuth: []
-      - {}
       responses:
         '200':
           description: No response body
-  /api/apps/:
+  /api/allowed-emails/:
     get:
-      operationId: apps_retrieve
-      tags:
-      - apps
-      security:
-      - jwtAuth: []
-      - {}
-      responses:
-        '200':
-          description: No response body
-  /api/apps/apps/:
-    get:
-      operationId: apps_apps_list
+      operationId: allowed_emails_list
+      description: |-
+        ViewSet para gerenciar emails permitidos.
+        Apenas administradores podem gerenciar a lista.
       parameters:
       - name: page
         required: false
@@ -35,10 +26,291 @@ paths:
         schema:
           type: integer
       tags:
+      - allowed-emails
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAllowedEmailList'
+          description: ''
+    post:
+      operationId: allowed_emails_create
+      description: |-
+        ViewSet para gerenciar emails permitidos.
+        Apenas administradores podem gerenciar a lista.
+      tags:
+      - allowed-emails
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AllowedEmailCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AllowedEmailCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AllowedEmailCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllowedEmailCreate'
+          description: ''
+  /api/allowed-emails/{id}/:
+    get:
+      operationId: allowed_emails_retrieve
+      description: |-
+        ViewSet para gerenciar emails permitidos.
+        Apenas administradores podem gerenciar a lista.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Um valor inteiro único que identifica este Email Permitido.
+        required: true
+      tags:
+      - allowed-emails
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllowedEmail'
+          description: ''
+    put:
+      operationId: allowed_emails_update
+      description: |-
+        ViewSet para gerenciar emails permitidos.
+        Apenas administradores podem gerenciar a lista.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Um valor inteiro único que identifica este Email Permitido.
+        required: true
+      tags:
+      - allowed-emails
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AllowedEmail'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AllowedEmail'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AllowedEmail'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllowedEmail'
+          description: ''
+    patch:
+      operationId: allowed_emails_partial_update
+      description: |-
+        ViewSet para gerenciar emails permitidos.
+        Apenas administradores podem gerenciar a lista.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Um valor inteiro único que identifica este Email Permitido.
+        required: true
+      tags:
+      - allowed-emails
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAllowedEmail'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAllowedEmail'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAllowedEmail'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllowedEmail'
+          description: ''
+    delete:
+      operationId: allowed_emails_destroy
+      description: |-
+        ViewSet para gerenciar emails permitidos.
+        Apenas administradores podem gerenciar a lista.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Um valor inteiro único que identifica este Email Permitido.
+        required: true
+      tags:
+      - allowed-emails
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/allowed-emails/{id}/toggle_active/:
+    post:
+      operationId: allowed_emails_toggle_active_create
+      description: Ativa/desativa um email.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Um valor inteiro único que identifica este Email Permitido.
+        required: true
+      tags:
+      - allowed-emails
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AllowedEmail'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AllowedEmail'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AllowedEmail'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllowedEmail'
+          description: ''
+  /api/allowed-emails/bulk_create/:
+    post:
+      operationId: allowed_emails_bulk_create_create
+      description: |-
+        Cria múltiplos emails de uma vez.
+        Espera um array de objetos com email, name (opcional), notes (opcional).
+      tags:
+      - allowed-emails
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AllowedEmail'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AllowedEmail'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AllowedEmail'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllowedEmail'
+          description: ''
+  /api/allowed-emails/check_email/:
+    get:
+      operationId: allowed_emails_check_email_retrieve
+      description: |-
+        Verifica se um email está na lista de permitidos.
+        Útil para verificações rápidas.
+      tags:
+      - allowed-emails
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllowedEmail'
+          description: ''
+  /api/apps/:
+    get:
+      operationId: apps_retrieve
+      tags:
       - apps
       security:
       - jwtAuth: []
-      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/apps/apps/:
+    get:
+      operationId: apps_apps_list
+      parameters:
+      - in: query
+        name: branch
+        schema:
+          type: string
+      - in: query
+        name: name
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Um número de página dentro do conjunto de resultados paginado.
+        schema:
+          type: integer
+      - in: query
+        name: project
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - deleting
+          - deploying
+          - error
+          - running
+          - starting
+          - stopped
+        description: |-
+          * `starting` - Starting
+          * `running` - Running
+          * `stopped` - Stopped
+          * `error` - Error
+          * `deleting` - Deleting
+          * `deploying` - Deploying
+      tags:
+      - apps
+      security:
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -85,7 +357,6 @@ paths:
       - apps
       security:
       - jwtAuth: []
-      - {}
       responses:
         '200':
           content:
@@ -158,6 +429,7 @@ paths:
           description: ''
     delete:
       operationId: apps_apps_destroy
+      description: Override destroy para lançar task de deleção no Dokku.
       parameters:
       - in: path
         name: id
@@ -186,7 +458,108 @@ paths:
       - apps
       security:
       - jwtAuth: []
-      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/App'
+          description: ''
+  /api/apps/apps/{id}/restart/:
+    post:
+      operationId: apps_apps_restart_create
+      description: Reinicia uma aplicação.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Um valor inteiro único que identifica este App.
+        required: true
+      tags:
+      - apps
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/App'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/App'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/App'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/App'
+          description: ''
+  /api/apps/apps/{id}/start/:
+    post:
+      operationId: apps_apps_start_create
+      description: Inicia uma aplicação parada.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Um valor inteiro único que identifica este App.
+        required: true
+      tags:
+      - apps
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/App'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/App'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/App'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/App'
+          description: ''
+  /api/apps/apps/{id}/stop/:
+    post:
+      operationId: apps_apps_stop_create
+      description: Para uma aplicação em execução.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Um valor inteiro único que identifica este App.
+        required: true
+      tags:
+      - apps
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/App'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/App'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/App'
+        required: true
+      security:
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -201,7 +574,6 @@ paths:
       - auth
       security:
       - jwtAuth: []
-      - {}
       responses:
         '200':
           description: No response body
@@ -271,12 +643,10 @@ paths:
     get:
       operationId: auth_users_list
       parameters:
-      - in: query
-        name: id
-        schema:
-          type: integer
-      - in: query
-        name: name
+      - name: ordering
+        required: false
+        in: query
+        description: Qual campo usar ao ordenar os resultados.
         schema:
           type: string
       - name: page
@@ -285,11 +655,16 @@ paths:
         description: Um número de página dentro do conjunto de resultados paginado.
         schema:
           type: integer
+      - name: search
+        required: false
+        in: query
+        description: Um termo de busca.
+        schema:
+          type: string
       tags:
       - users
       security:
       - jwtAuth: []
-      - {}
       responses:
         '200':
           content:
@@ -336,7 +711,6 @@ paths:
       - users
       security:
       - jwtAuth: []
-      - {}
       responses:
         '200':
           content:
@@ -430,7 +804,6 @@ paths:
       - users
       security:
       - jwtAuth: []
-      - {}
       responses:
         '200':
           content:
@@ -445,7 +818,6 @@ paths:
       - git
       security:
       - jwtAuth: []
-      - {}
       responses:
         '200':
           description: No response body
@@ -516,7 +888,6 @@ paths:
       - logs
       security:
       - jwtAuth: []
-      - {}
       responses:
         '200':
           content:
@@ -539,7 +910,6 @@ paths:
       - logs
       security:
       - jwtAuth: []
-      - {}
       responses:
         '200':
           content:
@@ -563,7 +933,6 @@ paths:
       - logs
       security:
       - jwtAuth: []
-      - {}
       responses:
         '200':
           content:
@@ -578,7 +947,6 @@ paths:
       - projects
       security:
       - jwtAuth: []
-      - {}
       responses:
         '200':
           description: No response body
@@ -596,7 +964,6 @@ paths:
       - projects
       security:
       - jwtAuth: []
-      - {}
       responses:
         '200':
           content:
@@ -644,7 +1011,6 @@ paths:
       - projects
       security:
       - jwtAuth: []
-      - {}
       responses:
         '200':
           content:
@@ -904,8 +1270,94 @@ paths:
               schema:
                 $ref: '#/components/schemas/TokenRefresh'
           description: ''
+  /api/webhooks/github/{app_id}/:
+    post:
+      operationId: webhooks_github_create
+      description: |-
+        Endpoint para receber webhooks do GitHub.
+        Dispara redeploy quando há push na branch configurada.
+      parameters:
+      - in: path
+        name: app_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - webhooks
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
 components:
   schemas:
+    AllowedEmail:
+      type: object
+      description: Serializer para o modelo AllowedEmail.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          title: E-mail
+          description: Email do professor/funcionário autorizado
+          maxLength: 254
+        name:
+          type: string
+          nullable: true
+          title: Nome
+          description: Nome do professor/funcionário (opcional)
+          maxLength: 255
+        is_active:
+          type: boolean
+          title: Ativo
+          description: Se desativado, o email não terá mais acesso
+        notes:
+          type: string
+          nullable: true
+          title: Observações
+          description: Observações sobre este acesso
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Criado em
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Atualizado em
+      required:
+      - created_at
+      - email
+      - id
+      - updated_at
+    AllowedEmailCreate:
+      type: object
+      description: Serializer para criação de AllowedEmail.
+      properties:
+        email:
+          type: string
+          format: email
+          title: E-mail
+          description: Email do professor/funcionário autorizado
+          maxLength: 254
+        name:
+          type: string
+          nullable: true
+          title: Nome
+          description: Nome do professor/funcionário (opcional)
+          maxLength: 255
+        notes:
+          type: string
+          nullable: true
+          title: Observações
+          description: Observações sobre este acesso
+      required:
+      - email
     App:
       type: object
       properties:
@@ -995,9 +1447,8 @@ components:
         metadata: {}
         progress:
           type: integer
-          maximum: 9223372036854775807
-          minimum: -9223372036854775808
-          format: int64
+          maximum: 2147483647
+          minimum: -2147483648
         created_at:
           type: string
           format: date-time
@@ -1045,6 +1496,29 @@ components:
         * `ERROR` - Error
         * `SUCCESS` - Success
         * `DOKKU` - Dokku Output
+    PaginatedAllowedEmailList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AllowedEmail'
     PaginatedAppList:
       type: object
       required:
@@ -1137,6 +1611,44 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/User'
+    PatchedAllowedEmail:
+      type: object
+      description: Serializer para o modelo AllowedEmail.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          title: E-mail
+          description: Email do professor/funcionário autorizado
+          maxLength: 254
+        name:
+          type: string
+          nullable: true
+          title: Nome
+          description: Nome do professor/funcionário (opcional)
+          maxLength: 255
+        is_active:
+          type: boolean
+          title: Ativo
+          description: Se desativado, o email não terá mais acesso
+        notes:
+          type: string
+          nullable: true
+          title: Observações
+          description: Observações sobre este acesso
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Criado em
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Atualizado em
     PatchedApp:
       type: object
       properties:
@@ -1261,12 +1773,16 @@ components:
       - running
       - stopped
       - error
+      - deleting
+      - deploying
       type: string
       description: |-
         * `starting` - Starting
         * `running` - Running
         * `stopped` - Stopped
         * `error` - Error
+        * `deleting` - Deleting
+        * `deploying` - Deploying
     TokenRefresh:
       type: object
       properties:

@@ -322,50 +322,47 @@
                 Este app está sendo deletado...
               </v-alert>
 
+              <!-- Botão Iniciar/Parar (condicional) -->
               <v-btn
+                v-if="appStore.currentApp.status === 'STOPPED'"
                 block
                 class="mb-2"
                 color="success"
-                :disabled="
-                  appStore.currentApp.status === 'RUNNING' ||
-                    appStore.currentApp.status === 'STARTING' ||
-                    appStore.currentApp.status === 'DELETING'
-                "
-                prepend-icon="mdi-rocket-launch"
+                :loading="starting"
+                prepend-icon="mdi-play"
+                @click="handleStartApp"
               >
-                Deploy
+                Iniciar
               </v-btn>
               <v-btn
+                v-else
                 block
                 class="mb-2"
                 color="warning"
-                :disabled="appStore.currentApp.status !== 'RUNNING'"
-                prepend-icon="mdi-restart"
-              >
-                Restart
-              </v-btn>
-              <v-btn
-                block
-                class="mb-2"
-                :disabled="
-                  appStore.currentApp.status === 'STOPPED' ||
-                    appStore.currentApp.status === 'DELETING'
-                "
+                :disabled="appStore.currentApp.status === 'DELETING'"
+                :loading="stopping"
                 prepend-icon="mdi-stop"
-                variant="outlined"
+                @click="handleStopApp"
               >
                 Parar
               </v-btn>
+
+              <!-- Botão Reiniciar -->
               <v-btn
                 block
                 class="mb-2"
-                prepend-icon="mdi-file-document"
-                variant="outlined"
-                @click="showLogsDialog = true"
+                color="info"
+                :disabled="appStore.currentApp.status !== 'RUNNING'"
+                :loading="restarting"
+                prepend-icon="mdi-restart"
+                @click="handleRestartApp"
               >
-                Ver Logs
+                Reiniciar
               </v-btn>
+
               <v-divider class="my-3" />
+
+              <!-- Botão Deletar -->
               <v-btn
                 block
                 color="error"
@@ -457,36 +454,39 @@
       </v-card>
     </v-dialog>
 
-    <!-- Dialog de Logs -->
-    <v-dialog
-      v-model="showLogsDialog"
-      fullscreen
-      transition="dialog-bottom-transition"
-    >
-      <v-card>
-        <v-toolbar color="primary">
-          <v-btn icon @click="showLogsDialog = false">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-          <v-toolbar-title>Logs - {{ appStore.currentApp?.name }}</v-toolbar-title>
-          <v-spacer />
-          <v-btn icon @click="refreshLogs">
-            <v-icon>mdi-refresh</v-icon>
-          </v-btn>
-        </v-toolbar>
-        <v-card-text class="pa-4">
-          <LogViewer
-            :has-more="logStore.hasMore"
-            :loading="logStore.loading"
-            :logs="logStore.logs"
-            :task-id="appStore.currentApp?.task_id || undefined"
-            title="Logs da Aplicação"
-            @load-more="loadMoreLogs"
-            @stream-logs="handleStreamLogs"
-          />
-        </v-card-text>
-      </v-card>
-    </v-dialog>
+    <!-- Logs da Aplicação (inline) -->
+    <v-row v-if="appStore.currentApp">
+      <v-col cols="12">
+        <v-card>
+          <v-card-title class="d-flex justify-space-between align-center">
+            <span>
+              <v-icon class="mr-2">mdi-file-document-multiple</v-icon>
+              Logs da Aplicação
+            </span>
+            <v-btn
+              color="primary"
+              icon
+              size="small"
+              variant="text"
+              @click="refreshLogs"
+            >
+              <v-icon>mdi-refresh</v-icon>
+            </v-btn>
+          </v-card-title>
+          <v-card-text class="pa-4">
+            <LogViewer
+              :has-more="logStore.hasMore"
+              :loading="logStore.loading"
+              :logs="logStore.logs"
+              :task-id="appStore.currentApp?.task_id || undefined"
+              title="Logs"
+              @load-more="loadMoreLogs"
+              @stream-logs="handleStreamLogs"
+            />
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
@@ -511,7 +511,9 @@
   const savingEnvVar = ref(false)
   const confirmDelete = ref(false)
   const deleting = ref(false)
-  const showLogsDialog = ref(false)
+  const starting = ref(false)
+  const stopping = ref(false)
+  const restarting = ref(false)
   const newEnvVar = ref({ key: '', value: '' })
   const iframeKey = ref(0)
   const taskPollingInterval = ref<ReturnType<typeof setInterval> | null>(null)
@@ -519,6 +521,10 @@
   onMounted(async () => {
     try {
       await appStore.fetchApp(appId)
+      // Carrega logs automaticamente
+      if (appStore.currentApp?.id) {
+        await logStore.fetchLogsByApp(Number(appStore.currentApp.id))
+      }
       // Se há task em andamento, inicia polling
       startTaskPollingIfNeeded()
     } finally {
@@ -637,6 +643,46 @@
     }
   }
 
+  // Funções de controle do app
+  async function handleStartApp () {
+    starting.value = true
+    try {
+      await appStore.startApp(appId)
+      // Recarrega o app para ter os dados mais recentes
+      await appStore.fetchApp(appId)
+    } catch (error_) {
+      console.error('Erro ao iniciar app:', error_)
+    } finally {
+      starting.value = false
+    }
+  }
+
+  async function handleStopApp () {
+    stopping.value = true
+    try {
+      await appStore.stopApp(appId)
+      // Recarrega o app para ter os dados mais recentes
+      await appStore.fetchApp(appId)
+    } catch (error_) {
+      console.error('Erro ao parar app:', error_)
+    } finally {
+      stopping.value = false
+    }
+  }
+
+  async function handleRestartApp () {
+    restarting.value = true
+    try {
+      await appStore.restartApp(appId)
+      // Recarrega o app para ter os dados mais recentes
+      await appStore.fetchApp(appId)
+    } catch (error_) {
+      console.error('Erro ao reiniciar app:', error_)
+    } finally {
+      restarting.value = false
+    }
+  }
+
   // Funções de logs
   async function refreshLogs () {
     if (appStore.currentApp?.id) {
@@ -653,13 +699,6 @@
   async function handleStreamLogs (taskId: string, afterId?: number) {
     await logStore.streamLogs(taskId, afterId)
   }
-
-  // Watch para carregar logs quando o dialog abrir
-  watch(showLogsDialog, async newVal => {
-    if (newVal && appStore.currentApp?.id) {
-      await logStore.fetchLogsByApp(Number(appStore.currentApp.id))
-    }
-  })
 
   function formatDate (dateString?: string) {
     if (!dateString) {

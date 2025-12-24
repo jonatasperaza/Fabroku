@@ -43,6 +43,21 @@ class AppsService {
     const response = await apiClient.get(`/apps/apps/${id}/get_app_status/`)
     return response.data
   }
+
+  async startApp (id: string): Promise<App> {
+    const response = await apiClient.post(`/apps/apps/${id}/start/`)
+    return response.data
+  }
+
+  async stopApp (id: string): Promise<App> {
+    const response = await apiClient.post(`/apps/apps/${id}/stop/`)
+    return response.data
+  }
+
+  async restartApp (id: string): Promise<App> {
+    const response = await apiClient.post(`/apps/apps/${id}/restart/`)
+    return response.data
+  }
 }
 
 export default new AppsService()

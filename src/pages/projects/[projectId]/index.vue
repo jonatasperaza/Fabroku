@@ -320,8 +320,10 @@ PORT=3000"
   const envFileContent = ref('')
   const importError = ref('')
 
-  // Apps do projeto atual
-  const projectApps = computed(() => appStore.apps)
+  // Apps do projeto atual (apenas os do usuário)
+  const projectApps = computed(() => {
+    return appStore.apps.filter(app => app.is_owner !== false)
+  })
 
   onMounted(async () => {
     try {

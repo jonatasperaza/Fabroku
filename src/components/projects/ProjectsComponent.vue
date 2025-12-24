@@ -22,7 +22,7 @@
     <!-- Lista de Projetos -->
     <v-row v-if="!projectStore.loading">
       <v-col
-        v-for="project in projectStore.projects"
+        v-for="project in myProjects"
         :key="project.id"
         cols="12"
         md="4"
@@ -72,7 +72,7 @@
       </v-col>
 
       <!-- Empty State -->
-      <v-col v-if="projectStore.projects.length === 0" cols="12">
+      <v-col v-if="myProjects.length === 0" cols="12">
         <v-card class="text-center pa-8">
           <v-icon
             class="mb-4"
@@ -194,7 +194,7 @@
           <v-btn variant="text" @click="closeDialog">Cancelar</v-btn>
           <v-btn
             color="primary"
-            :disabled="!newProject.name.trim()"
+            :disabled="!newProject.name?.trim()"
             :loading="creating"
             @click="handleCreateProject"
           >
@@ -242,7 +242,7 @@
 <script setup lang="ts">
   import type { Project, User } from '@/interfaces'
 
-  import { onMounted, ref } from 'vue'
+  import { computed, onMounted, ref } from 'vue'
 
   import { UsersService } from '@/services'
   import { useAuthStore, useProjectStore } from '@/stores'
@@ -259,10 +259,12 @@
   const searchResults = ref<User[]>([])
   const selectedUsers = ref<User[]>([])
   const searchTimeout = ref<ReturnType<typeof setTimeout> | null>(null)
+  const newProject = ref<Partial<Project>>({ name: '', users: [] })
   const projectToDelete = ref<Project | null>(null)
 
-  const newProject = ref({
-    name: '',
+  // Filtrar apenas projetos do usuário
+  const myProjects = computed(() => {
+    return projectStore.projects.filter(project => project.is_owner !== false)
   })
 
   onMounted(() => {
@@ -311,7 +313,7 @@
   }
 
   async function handleCreateProject () {
-    if (!newProject.value.name.trim()) return
+    if (!newProject.value.name?.trim()) return
 
     creating.value = true
     try {
@@ -330,8 +332,9 @@
         }
       }
 
+      // Criar projeto
       await projectStore.createProject({
-        name: newProject.value.name,
+        name: newProject.value.name!,
         users: userIds,
       })
 

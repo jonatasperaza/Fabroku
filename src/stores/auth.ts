@@ -1,19 +1,12 @@
+import type { User } from '@/interfaces'
+
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
+
 import apiClient from '@/plugins/axios'
 
-interface GitHubUser {
-  id: number
-  login: string
-  name: string
-  avatar_url: string
-  bio: string
-  email: string
-  public_repos: number
-}
-
 export const useAuthStore = defineStore('auth', () => {
-  const user = ref<GitHubUser | null>(null)
+  const user = ref<User | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
 

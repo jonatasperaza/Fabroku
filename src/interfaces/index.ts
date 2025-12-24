@@ -10,7 +10,10 @@ interface User {
   username?: string
   email: string
   name?: string | null
-  avatar_url: string
+  avatar_url: string | null
+  is_superuser?: boolean
+  date_joined?: string
+  last_login?: string | null
 }
 
 interface Project {
@@ -19,6 +22,7 @@ interface Project {
   users: User['id'][]
   created_at?: string
   updated_at?: string
+  is_owner?: boolean
 }
 
 interface App {
@@ -35,6 +39,7 @@ interface App {
   variables?: Record<string, string> | object
   task_id?: string | null
   name_dokku?: string | null
+  is_owner?: boolean
 }
 
 interface TaskStatus {

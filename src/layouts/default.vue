@@ -9,7 +9,7 @@
             rounded="lg"
           >
             <v-avatar
-              :image="authStore.user?.avatar_url"
+              :image="authStore.user?.avatar_url ?? undefined"
               :name="authStore.user?.name"
             />
             <div class="ml-2">
@@ -35,6 +35,15 @@
             rounded="lg"
             title="Projetos"
             to="/projects"
+          />
+          <v-list-item
+            v-if="authStore.user?.is_superuser"
+            class="menu-item"
+            link
+            prepend-icon="mdi-shield-crown"
+            rounded="lg"
+            title="Administração"
+            to="/admin"
           />
           <v-list-item
             class="menu-item"

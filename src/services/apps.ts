@@ -58,6 +58,23 @@ class AppsService {
     const response = await apiClient.post(`/apps/apps/${id}/restart/`)
     return response.data
   }
+
+  async runCommand (
+    id: string,
+    command: string,
+  ): Promise<{ status: string, message: string, task_id: string }> {
+    const response = await apiClient.post(`/apps/apps/${id}/run_command/`, {
+      command,
+    })
+    return response.data
+  }
+
+  async getAllowedCommands (
+    id: string,
+  ): Promise<{ commands: string[], prefixes: string[] }> {
+    const response = await apiClient.get(`/apps/apps/${id}/allowed_commands/`)
+    return response.data
+  }
 }
 
 export default new AppsService()

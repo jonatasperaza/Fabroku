@@ -40,6 +40,20 @@ interface App {
   task_id?: string | null
   name_dokku?: string | null
   is_owner?: boolean
+  services?: Service[]
+}
+
+interface Service {
+  id?: number
+  name: string
+  service_type: 'postgres' | 'redis' | 'rabbitmq'
+  app: number
+  project: string
+  container_name?: string | null
+  host?: string
+  port?: number
+  created_at?: string
+  updated_at?: string
 }
 
 interface TaskStatus {
@@ -95,6 +109,7 @@ export type {
   LogLevel,
   Project,
   Response,
+  Service,
   TaskStatus,
   User,
 }

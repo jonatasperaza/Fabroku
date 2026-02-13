@@ -417,25 +417,6 @@
               </p>
             </v-card-text>
           </v-card>
-
-          <!-- Card Dica -->
-          <v-card class="app-card" variant="flat">
-            <v-card-text class="pa-4">
-              <div class="d-flex align-start ga-3">
-                <v-icon color="info" size="20">mdi-information</v-icon>
-                <div>
-                  <div class="text-body-2 font-weight-bold mb-1">
-                    Dica da Fábrica
-                  </div>
-                  <p class="text-caption text-medium-emphasis mb-0">
-                    Certifique-se que seu repositório possui um arquivo
-                    <code class="text-primary">package.json</code> ou
-                    <code class="text-primary">requirements.txt</code> na raiz.
-                  </p>
-                </div>
-              </div>
-            </v-card-text>
-          </v-card>
         </div>
       </v-col>
     </v-row>

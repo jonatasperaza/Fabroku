@@ -61,7 +61,7 @@
             <v-card-subtitle>{{ app.git }}</v-card-subtitle>
             <v-card-text>
               <v-chip :color="getStatusColor(app.status)" size="small">
-                {{ app.status || "stopped" }}
+                {{ formatStatus(app.status) }}
               </v-chip>
               <span v-if="app.domain" class="ml-2 text-caption">
                 {{ app.domain }}
@@ -104,6 +104,7 @@
   import { useRoute } from 'vue-router'
 
   import { useAppStore, useProjectStore } from '@/stores'
+  import { formatStatus, getStatusColor, getStatusIcon } from '@/utils/status'
 
   const route = useRoute()
   const projectId = (route.params as { projectId: string }).projectId || ''
@@ -131,25 +132,5 @@
     return new Date(dateString).toLocaleDateString('pt-BR')
   }
 
-  function getStatusColor (status?: string) {
-    const colors: Record<string, string> = {
-      RUNNING: 'success',
-      STOPPED: 'grey',
-      ERROR: 'error',
-      STARTING: 'warning',
-      DELETING: 'pink',
-    }
-    return colors[status || 'STOPPED'] || 'grey'
-  }
-
-  function getStatusIcon (status?: string) {
-    const icons: Record<string, string> = {
-      RUNNING: 'mdi-check-circle',
-      STOPPED: 'mdi-stop-circle',
-      ERROR: 'mdi-alert-circle',
-      STARTING: 'mdi-loading',
-      DELETING: 'mdi-delete-clock',
-    }
-    return icons[status || 'STOPPED'] || 'mdi-circle'
-  }
+// Helpers importados de @/utils/status
 </script>

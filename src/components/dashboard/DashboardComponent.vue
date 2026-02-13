@@ -2,7 +2,10 @@
   <v-container>
     <div class="d-flex justify-space-between align-center mb-4">
       <h1 class="text-h4 mb-6">Dashboard</h1>
-      <v-icon class="mb-4 bg-primary rounded-circle pa-4" @click="">mdi-plus</v-icon>
+      <v-icon
+        class="mb-4 bg-primary rounded-circle pa-4"
+        @click=""
+      >mdi-plus</v-icon>
     </div>
 
     <v-progress-linear v-if="loading" class="mb-4" indeterminate />
@@ -68,7 +71,7 @@
               </v-list-item-subtitle>
               <template #append>
                 <v-chip :color="getStatusColor(app.status)" size="x-small">
-                  {{ app.status || "stopped" }}
+                  {{ formatStatus(app.status) }}
                 </v-chip>
               </template>
             </v-list-item>
@@ -96,6 +99,7 @@
 
   import RepoSelector from '@/components/git/RepoSelector.vue'
   import { useAppStore, useProjectStore } from '@/stores'
+  import { formatStatus, getStatusColor, getStatusIcon } from '@/utils/status'
 
   const router = useRouter()
   const projectStore = useProjectStore()
@@ -146,27 +150,7 @@
     return new Date(dateString).toLocaleDateString('pt-BR')
   }
 
-  function getStatusColor (status?: string) {
-    const colors: Record<string, string> = {
-      RUNNING: 'success',
-      STOPPED: 'grey',
-      ERROR: 'error',
-      STARTING: 'warning',
-      DELETING: 'pink',
-    }
-    return colors[status || 'STOPPED'] || 'grey'
-  }
-
-  function getStatusIcon (status?: string) {
-    const icons: Record<string, string> = {
-      RUNNING: 'mdi-check-circle',
-      STOPPED: 'mdi-stop-circle',
-      ERROR: 'mdi-alert-circle',
-      STARTING: 'mdi-loading',
-      DELETING: 'mdi-delete-clock',
-    }
-    return icons[status || 'STOPPED'] || 'mdi-circle'
-  }
+  // Helpers importados de @/utils/status
 
   function handleRepoSelect (repo: GitRepo) {
     showRepos.value = false

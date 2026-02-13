@@ -29,7 +29,7 @@
               :color="getStatusColor(appStore.currentApp.status)"
               size="small"
             >
-              {{ appStore.currentApp.status || "stopped" }}
+              {{ formatStatus(appStore.currentApp.status) }}
             </v-chip>
           </div>
         </div>
@@ -70,7 +70,7 @@
             <v-card-text>
               <div v-if="appStore.taskStatus" class="mb-2">
                 <div class="d-flex justify-space-between mb-1">
-                  <span>{{ appStore.taskStatus.status }}</span>
+                  <span>{{ formatStatus(appStore.taskStatus.status) }}</span>
                   <span>{{ appStore.taskStatus.current }}%</span>
                 </div>
                 <v-progress-linear
@@ -178,6 +178,7 @@
   import AppsService from '@/services/apps'
   import ServicesService from '@/services/services'
   import { useAppStore, useLogStore } from '@/stores'
+  import { formatStatus, getStatusColor, getStatusIcon } from '@/utils/status'
 
   const route = useRoute()
   const router = useRouter()
@@ -478,26 +479,5 @@
     await logStore.streamLogs(taskId, afterId)
   }
 
-  // --- Helpers ---
-  function getStatusColor (status?: string) {
-    const colors: Record<string, string> = {
-      RUNNING: 'success',
-      STOPPED: 'grey',
-      ERROR: 'error',
-      STARTING: 'warning',
-      DELETING: 'pink',
-    }
-    return colors[status || 'STOPPED'] || 'grey'
-  }
-
-  function getStatusIcon (status?: string) {
-    const icons: Record<string, string> = {
-      RUNNING: 'mdi-check-circle',
-      STOPPED: 'mdi-stop-circle',
-      ERROR: 'mdi-alert-circle',
-      STARTING: 'mdi-loading',
-      DELETING: 'mdi-delete-clock',
-    }
-    return icons[status || 'STOPPED'] || 'mdi-circle'
-  }
+// --- Helpers importados de @/utils/status ---
 </script>

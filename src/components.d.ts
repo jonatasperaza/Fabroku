@@ -20,7 +20,6 @@ declare module 'vue' {
     AppPreviewCard: typeof import('./components/projects/AppPreviewCard.vue')['default']
     Apps: typeof import('./components/projects/apps/index.vue')['default']
     Components: typeof import('./components/index.vue')['default']
-    CreateAppDialog: typeof import('./components/projects/CreateAppDialog.vue')['default']
     DashboardComponent: typeof import('./components/dashboard/DashboardComponent.vue')['default']
     DocumentationComponent: typeof import('./components/documentation/DocumentationComponent.vue')['default']
     IconCloudDemo: typeof import('./components/demo/IconCloudDemo.vue')['default']

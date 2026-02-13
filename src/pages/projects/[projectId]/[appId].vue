@@ -362,13 +362,11 @@
                 = 'Comando executado com sucesso! Veja detalhes nos Logs abaixo.'
               commandSuccess.value = true
               runningCommand.value = false
-              await refreshLogs()
               return true
             } else if (status.state === 'FAILURE') {
               commandOutput.value = status.status || 'Erro ao executar comando'
               commandSuccess.value = false
               runningCommand.value = false
-              await refreshLogs()
               return true
             }
             return false
@@ -388,7 +386,6 @@
                 = 'Comando ainda em execução. Acompanhe o progresso nos Logs abaixo.'
               commandSuccess.value = true
               runningCommand.value = false
-              await refreshLogs()
             }
           }
         }, 2000)

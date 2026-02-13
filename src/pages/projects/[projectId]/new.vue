@@ -50,35 +50,24 @@
             </div>
 
             <!-- Nome personalizado — apenas fabric/admin -->
-            <v-expand-transition>
-              <div v-if="canCustomize" class="mt-5">
-                <v-divider class="mb-4" />
-                <div class="d-flex align-center ga-2 mb-2">
-                  <v-icon color="amber" size="small">mdi-star</v-icon>
-                  <span class="text-body-2 font-weight-medium">Nome Personalizado no Dokku</span>
-                  <v-chip
-                    color="amber"
-                    size="x-small"
-                    variant="flat"
-                  >Fábrica</v-chip>
-                </div>
-                <v-text-field
-                  v-model="customDokkuName"
-                  density="comfortable"
-                  hide-details
-                  hint="Deixe vazio para usar o nome padrão"
-                  persistent-hint
-                  placeholder="meu-app-custom"
-                  prepend-inner-icon="mdi-rename"
-                  variant="outlined"
-                />
-                <div class="text-caption text-medium-emphasis mt-1">
-                  Como membro da Fábrica, você pode definir um nome
-                  personalizado. Padrão:
-                  <code>{{ newApp.name || "nome-do-app" }}</code>
-                </div>
+            <template v-if="canCustomize">
+              <v-divider class="my-5" />
+              <div class="text-body-2 text-medium-emphasis mb-1">
+                Nome Personalizado no Dokku
               </div>
-            </v-expand-transition>
+              <v-text-field
+                v-model="customDokkuName"
+                density="comfortable"
+                hide-details
+                placeholder="meu-app-custom"
+                prepend-inner-icon="mdi-rename"
+                variant="outlined"
+              />
+              <div class="text-caption text-medium-emphasis mt-1">
+                Deixe vazio para usar o nome padrão:
+                <code>{{ newApp.name || "nome-do-app" }}</code>
+              </div>
+            </template>
           </v-card-text>
         </v-card>
 

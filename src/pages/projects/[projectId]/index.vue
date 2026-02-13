@@ -35,7 +35,7 @@
         <v-btn
           color="primary"
           prepend-icon="mdi-plus"
-          @click="dialogCreate = true"
+          :to="`/projects/${projectId}/new`"
         >
           Novo App
         </v-btn>
@@ -89,20 +89,13 @@
             >mdi-application-outline</v-icon>
             <h3 class="text-h6 mb-2">Nenhum app neste projeto</h3>
             <p class="text-grey mb-4">Crie seu primeiro app para começar</p>
-            <v-btn color="primary" @click="dialogCreate = true">
+            <v-btn color="primary" :to="`/projects/${projectId}/new`">
               Criar App
             </v-btn>
           </v-card>
         </v-col>
       </v-row>
     </template>
-
-    <CreateAppDialog
-      v-model="dialogCreate"
-      :creating="creating"
-      @create="handleCreateApp"
-      @create-from-repo="handleCreateApp"
-    />
   </v-container>
 </template>
 
@@ -110,7 +103,6 @@
   import { computed, onMounted, ref } from 'vue'
   import { useRoute } from 'vue-router'
 
-  import CreateAppDialog from '@/components/projects/CreateAppDialog.vue'
   import { useAppStore, useProjectStore } from '@/stores'
 
   const route = useRoute()
@@ -120,8 +112,6 @@
   const appStore = useAppStore()
 
   const loading = ref(true)
-  const dialogCreate = ref(false)
-  const creating = ref(false)
 
   const projectApps = computed(() => {
     return appStore.apps.filter(app => app.is_owner !== false)
@@ -161,28 +151,5 @@
       DELETING: 'mdi-delete-clock',
     }
     return icons[status || 'STOPPED'] || 'mdi-circle'
-  }
-
-  async function handleCreateApp (payload: {
-    name: string
-    git: string
-    branch?: string
-    variables?: Record<string, string>
-  }) {
-    creating.value = true
-    try {
-      await appStore.createApp({
-        name: payload.name,
-        git: payload.git,
-        branch: payload.branch,
-        project: projectId,
-        variables: payload.variables,
-      })
-      dialogCreate.value = false
-    } catch (error_) {
-      console.error('Erro ao criar app:', error_)
-    } finally {
-      creating.value = false
-    }
   }
 </script>

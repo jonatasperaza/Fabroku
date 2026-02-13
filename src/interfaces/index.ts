@@ -12,6 +12,7 @@ interface User {
   name?: string | null
   avatar_url: string | null
   is_superuser?: boolean
+  is_fabric?: boolean
   date_joined?: string
   last_login?: string | null
 }

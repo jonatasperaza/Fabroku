@@ -5,7 +5,7 @@
       <v-btn
         color="primary"
         prepend-icon="mdi-plus"
-        @click="dialogCreate = true"
+        to="/projects/new"
       >
         Novo Projeto
       </v-btn>
@@ -81,128 +81,14 @@
           >mdi-folder-outline</v-icon>
           <h3 class="text-h6 mb-2">Nenhum projeto ainda</h3>
           <p class="text-grey mb-4">Crie seu primeiro projeto para começar</p>
-          <v-btn color="primary" @click="dialogCreate = true">
+          <v-btn color="primary" to="/projects/new">
             Criar Projeto
           </v-btn>
         </v-card>
       </v-col>
     </v-row>
 
-    <!-- Dialog Criar Projeto -->
-    <v-dialog v-model="dialogCreate" max-width="600">
-      <v-card>
-        <v-card-title>Novo Projeto</v-card-title>
-        <v-card-text>
-          <v-text-field
-            v-model="newProject.name"
-            autofocus
-            class="mb-4"
-            label="Nome do Projeto"
-            required
-            variant="outlined"
-          />
 
-          <!-- Seleção de Equipe -->
-          <div class="mb-2 text-subtitle-2">Equipe do Projeto</div>
-
-          <!-- Usuário atual (sempre incluído) -->
-          <v-chip
-            v-if="authStore.user"
-            class="mb-3"
-            color="primary"
-            prepend-icon="mdi-account-check"
-          >
-            <v-avatar v-if="authStore.user.avatar_url" size="24" start>
-              <v-img :src="authStore.user.avatar_url" />
-            </v-avatar>
-            <v-avatar v-else color="grey" size="24" start>
-              <v-icon size="small">mdi-account</v-icon>
-            </v-avatar>
-            {{ authStore.user.name || authStore.user.username || authStore.user.email }} (você)
-          </v-chip>
-
-          <!-- Busca de usuários -->
-          <v-autocomplete
-            v-model="selectedUsers"
-            v-model:search="searchQuery"
-            chips
-            clearable
-            closable-chips
-            hide-no-data
-            hide-selected
-            item-title="name"
-            item-value="id"
-            :items="searchResults"
-            label="Adicionar membros (buscar por nome do GitHub)"
-            :loading="searching"
-            multiple
-            placeholder="Digite o nome do usuário..."
-            return-object
-            variant="outlined"
-            @update:search="handleSearch"
-          >
-            <template #chip="{ item, props: chipProps }">
-              <v-chip v-bind="chipProps">
-                <v-avatar v-if="item.raw.avatar_url" size="24" start>
-                  <v-img :src="item.raw.avatar_url" />
-                </v-avatar>
-                {{ item.raw.name }}
-              </v-chip>
-            </template>
-            <template #item="{ item, props: itemProps }">
-              <v-list-item v-bind="itemProps">
-                <template #prepend>
-                  <v-avatar v-if="item.raw.avatar_url" size="32">
-                    <v-img :src="item.raw.avatar_url" />
-                  </v-avatar>
-                  <v-avatar v-else color="grey" size="32">
-                    <v-icon>mdi-account</v-icon>
-                  </v-avatar>
-                </template>
-                <v-list-item-title>{{ item.raw.name }}</v-list-item-title>
-                <v-list-item-subtitle v-if="item.raw.email">
-                  {{ item.raw.email }}
-                </v-list-item-subtitle>
-              </v-list-item>
-            </template>
-            <template #no-data>
-              <v-list-item v-if="searchQuery && searchQuery.length >= 2">
-                <v-list-item-title>
-                  Nenhum usuário encontrado para "{{ searchQuery }}"
-                </v-list-item-title>
-              </v-list-item>
-              <v-list-item v-else>
-                <v-list-item-title>
-                  Digite pelo menos 2 caracteres para buscar
-                </v-list-item-title>
-              </v-list-item>
-            </template>
-          </v-autocomplete>
-
-          <v-alert
-            class="mt-2"
-            density="compact"
-            icon="mdi-information"
-            type="info"
-            variant="tonal"
-          >
-            Você será adicionado automaticamente ao projeto.
-          </v-alert>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="closeDialog">Cancelar</v-btn>
-          <v-btn
-            color="primary"
-            :disabled="!newProject.name?.trim()"
-            :loading="creating"
-            @click="handleCreateProject"
-          >
-            Criar
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
 
     <!-- Dialog Confirmar Exclusão de Projeto -->
     <v-dialog v-model="dialogDelete" max-width="450">
@@ -240,26 +126,16 @@
 </template>
 
 <script setup lang="ts">
-  import type { Project, User } from '@/interfaces'
+  import type { Project } from '@/interfaces'
 
   import { computed, onMounted, ref } from 'vue'
 
-  import { UsersService } from '@/services'
-  import { useAuthStore, useProjectStore } from '@/stores'
+  import { useProjectStore } from '@/stores'
 
   const projectStore = useProjectStore()
-  const authStore = useAuthStore()
 
-  const dialogCreate = ref(false)
   const dialogDelete = ref(false)
-  const creating = ref(false)
   const deleting = ref(false)
-  const searching = ref(false)
-  const searchQuery = ref('')
-  const searchResults = ref<User[]>([])
-  const selectedUsers = ref<User[]>([])
-  const searchTimeout = ref<ReturnType<typeof setTimeout> | null>(null)
-  const newProject = ref<Partial<Project>>({ name: '', users: [] })
   const projectToDelete = ref<Project | null>(null)
 
   // Filtrar apenas projetos do usuário
@@ -274,76 +150,6 @@
   function formatDate (dateString?: string) {
     if (!dateString) return '-'
     return new Date(dateString).toLocaleDateString('pt-BR')
-  }
-
-  async function handleSearch (query: string) {
-    // Limpa o timeout anterior
-    if (searchTimeout.value) {
-      clearTimeout(searchTimeout.value)
-    }
-
-    // Precisa de pelo menos 2 caracteres
-    if (!query || query.length < 2) {
-      searchResults.value = []
-      return
-    }
-
-    // Debounce de 300ms
-    searchTimeout.value = setTimeout(async () => {
-      searching.value = true
-      try {
-        const results = await UsersService.searchByUsername(query)
-        // Filtra o usuário atual da lista de resultados
-        searchResults.value = results.filter(u => u.id !== authStore.user?.id)
-      } catch (error_) {
-        console.error('Erro ao buscar usuários:', error_)
-        searchResults.value = []
-      } finally {
-        searching.value = false
-      }
-    }, 300)
-  }
-
-  function closeDialog () {
-    dialogCreate.value = false
-    newProject.value.name = ''
-    selectedUsers.value = []
-    searchQuery.value = ''
-    searchResults.value = []
-  }
-
-  async function handleCreateProject () {
-    if (!newProject.value.name?.trim()) return
-
-    creating.value = true
-    try {
-      // Monta a lista de IDs: usuário atual + selecionados
-      const userIds: number[] = []
-
-      // Adiciona o usuário atual primeiro
-      if (authStore.user?.id) {
-        userIds.push(authStore.user.id)
-      }
-
-      // Adiciona os usuários selecionados
-      for (const user of selectedUsers.value) {
-        if (user.id && !userIds.includes(user.id)) {
-          userIds.push(user.id)
-        }
-      }
-
-      // Criar projeto
-      await projectStore.createProject({
-        name: newProject.value.name!,
-        users: userIds,
-      })
-
-      closeDialog()
-    } catch (error_) {
-      console.error('Erro ao criar projeto:', error_)
-    } finally {
-      creating.value = false
-    }
   }
 
   function openDeleteDialog (project: Project) {

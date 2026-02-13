@@ -11,8 +11,16 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AppActionsCard: typeof import('./components/projects/AppActionsCard.vue')['default']
+    AppConsoleCard: typeof import('./components/projects/AppConsoleCard.vue')['default']
+    AppDatabaseCard: typeof import('./components/projects/AppDatabaseCard.vue')['default']
+    AppDetailsCard: typeof import('./components/projects/AppDetailsCard.vue')['default']
+    AppEnvVarsCard: typeof import('./components/projects/AppEnvVarsCard.vue')['default']
+    AppLogsCard: typeof import('./components/projects/AppLogsCard.vue')['default']
+    AppPreviewCard: typeof import('./components/projects/AppPreviewCard.vue')['default']
     Apps: typeof import('./components/projects/apps/index.vue')['default']
     Components: typeof import('./components/index.vue')['default']
+    CreateAppDialog: typeof import('./components/projects/CreateAppDialog.vue')['default']
     DashboardComponent: typeof import('./components/dashboard/DashboardComponent.vue')['default']
     DocumentationComponent: typeof import('./components/documentation/DocumentationComponent.vue')['default']
     IconCloudDemo: typeof import('./components/demo/IconCloudDemo.vue')['default']

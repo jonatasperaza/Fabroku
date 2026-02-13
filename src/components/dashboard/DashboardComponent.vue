@@ -1,41 +1,11 @@
 <template>
   <v-container>
-    <h1 class="text-h4 mb-6">Dashboard</h1>
+    <div class="d-flex justify-space-between align-center mb-4">
+      <h1 class="text-h4 mb-6">Dashboard</h1>
+      <v-icon class="mb-4 bg-primary rounded-circle pa-4" @click="">mdi-plus</v-icon>
+    </div>
 
-    <!-- Loading -->
     <v-progress-linear v-if="loading" class="mb-4" indeterminate />
-
-    <!-- Stats Cards -->
-    <v-row class="mb-6">
-      <v-col cols="12" md="3" sm="6">
-        <v-card class="text-center pa-4" color="primary" variant="tonal">
-          <v-icon class="mb-2" size="48">mdi-folder-multiple</v-icon>
-          <div class="text-h4">{{ stats.projects }}</div>
-          <div class="text-body-2">Projetos</div>
-        </v-card>
-      </v-col>
-      <v-col cols="12" md="3" sm="6">
-        <v-card class="text-center pa-4" color="success" variant="tonal">
-          <v-icon class="mb-2" size="48">mdi-application</v-icon>
-          <div class="text-h4">{{ stats.apps }}</div>
-          <div class="text-body-2">Apps</div>
-        </v-card>
-      </v-col>
-      <v-col cols="12" md="3" sm="6">
-        <v-card class="text-center pa-4" color="info" variant="tonal">
-          <v-icon class="mb-2" size="48">mdi-check-circle</v-icon>
-          <div class="text-h4">{{ stats.running }}</div>
-          <div class="text-body-2">Em Execução</div>
-        </v-card>
-      </v-col>
-      <v-col cols="12" md="3" sm="6">
-        <v-card class="text-center pa-4" color="error" variant="tonal">
-          <v-icon class="mb-2" size="48">mdi-alert-circle</v-icon>
-          <div class="text-h4">{{ stats.errors }}</div>
-          <div class="text-body-2">Com Erro</div>
-        </v-card>
-      </v-col>
-    </v-row>
 
     <v-row>
       <!-- Projetos Recentes -->
@@ -110,51 +80,6 @@
         </v-card>
       </v-col>
     </v-row>
-
-    <!-- Quick Actions -->
-    <v-card class="mt-6">
-      <v-card-title>Ações Rápidas</v-card-title>
-      <v-card-text>
-        <v-row>
-          <v-col cols="12" md="4" sm="6">
-            <v-btn
-              block
-              color="primary"
-              prepend-icon="mdi-plus"
-              size="large"
-              to="/projects"
-              variant="tonal"
-            >
-              Novo Projeto
-            </v-btn>
-          </v-col>
-          <v-col cols="12" md="4" sm="6">
-            <v-btn
-              block
-              color="success"
-              prepend-icon="mdi-source-repository"
-              size="large"
-              variant="tonal"
-              @click="showRepos = true"
-            >
-              Conectar Repositório
-            </v-btn>
-          </v-col>
-          <v-col cols="12" md="4" sm="6">
-            <v-btn
-              block
-              color="info"
-              prepend-icon="mdi-file-document"
-              size="large"
-              to="/documentation"
-              variant="tonal"
-            >
-              Documentação
-            </v-btn>
-          </v-col>
-        </v-row>
-      </v-card-text>
-    </v-card>
 
     <!-- Dialog Repositórios -->
     <v-dialog v-model="showRepos" max-width="600">

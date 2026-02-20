@@ -30,6 +30,7 @@ declare module 'vue-router/auto-routes' {
     '/projects/[projectId]/[appId]/logs': RouteRecordInfo<'/projects/[projectId]/[appId]/logs', '/projects/:projectId/:appId/logs', { projectId: ParamValue<true>, appId: ParamValue<true> }, { projectId: ParamValue<false>, appId: ParamValue<false> }>,
     '/projects/[projectId]/apps/[appId]/logs': RouteRecordInfo<'/projects/[projectId]/apps/[appId]/logs', '/projects/:projectId/apps/:appId/logs', { projectId: ParamValue<true>, appId: ParamValue<true> }, { projectId: ParamValue<false>, appId: ParamValue<false> }>,
     '/projects/[projectId]/new': RouteRecordInfo<'/projects/[projectId]/new', '/projects/:projectId/new', { projectId: ParamValue<true> }, { projectId: ParamValue<false> }>,
+    '/projects/deploy-keys-disabled': RouteRecordInfo<'/projects/deploy-keys-disabled', '/projects/deploy-keys-disabled', Record<never, never>, Record<never, never>>,
     '/projects/new': RouteRecordInfo<'/projects/new', '/projects/new', Record<never, never>, Record<never, never>>,
     '/settings/': RouteRecordInfo<'/settings/', '/settings', Record<never, never>, Record<never, never>>,
   }
@@ -91,6 +92,10 @@ declare module 'vue-router/auto-routes' {
     }
     'src/pages/projects/[projectId]/new.vue': {
       routes: '/projects/[projectId]/new'
+      views: never
+    }
+    'src/pages/projects/deploy-keys-disabled.vue': {
+      routes: '/projects/deploy-keys-disabled'
       views: never
     }
     'src/pages/projects/new.vue': {

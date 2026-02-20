@@ -783,11 +783,11 @@ async function handleDeploy() {
     if (app?.id) {
       try {
         const status = await appStore.fetchAppStatus(String(app.id));
+        // Detecta erro de deploy keys desabilitadas pelo error_type
         if (
           status?.state === "FAILURE" &&
-          (status as any).deploy_keys_disabled
+          (status as any).error_type === "DeployKeysDisabled"
         ) {
-          // Redireciona para tela de ajuda, passando o help_url se disponível
           router.push({
             path: "/projects/deploy-keys-disabled",
             query: { help_url: (status as any).help_url || undefined },

@@ -32,6 +32,7 @@ declare module 'vue-router/auto-routes' {
     '/projects/[projectId]/new': RouteRecordInfo<'/projects/[projectId]/new', '/projects/:projectId/new', { projectId: ParamValue<true> }, { projectId: ParamValue<false> }>,
     '/projects/deploy-keys-disabled': RouteRecordInfo<'/projects/deploy-keys-disabled', '/projects/deploy-keys-disabled', Record<never, never>, Record<never, never>>,
     '/projects/new': RouteRecordInfo<'/projects/new', '/projects/new', Record<never, never>, Record<never, never>>,
+    '/projects/org-permission-denied': RouteRecordInfo<'/projects/org-permission-denied', '/projects/org-permission-denied', Record<never, never>, Record<never, never>>,
     '/settings/': RouteRecordInfo<'/settings/', '/settings', Record<never, never>, Record<never, never>>,
   }
 
@@ -100,6 +101,10 @@ declare module 'vue-router/auto-routes' {
     }
     'src/pages/projects/new.vue': {
       routes: '/projects/new'
+      views: never
+    }
+    'src/pages/projects/org-permission-denied.vue': {
+      routes: '/projects/org-permission-denied'
       views: never
     }
     'src/pages/settings/index.vue': {

@@ -6,17 +6,17 @@
     </h1>
     <p class="mb-4">
       O deploy automático não pôde ser realizado porque as
-      <b>deploy keys</b> estão desabilitadas neste repositório.<br />
+      <b>deploy keys</b> estão desabilitadas neste repositório.<br>
       Para continuar, ative as deploy keys nas configurações do repositório no
       GitHub.
     </p>
     <v-btn
       v-if="helpUrl"
-      :href="helpUrl"
-      target="_blank"
-      color="primary"
       class="mb-2"
+      color="primary"
+      :href="helpUrl"
       prepend-icon="mdi-open-in-new"
+      target="_blank"
     >
       Ver documentação do GitHub
     </v-btn>
@@ -25,13 +25,13 @@
 </template>
 
 <script setup lang="ts">
-import { useRoute } from "vue-router";
-import { computed } from "vue";
+  import { computed } from 'vue'
+  import { useRoute } from 'vue-router'
 
-const route = useRoute();
-const helpUrl = computed(
-  () =>
-    (route.query.help_url as string) ||
-    "https://docs.github.com/pt/authentication/keeping-your-account-and-data-secure/about-ssh-deploy-keys",
-);
+  const route = useRoute()
+  const helpUrl = computed(
+    () =>
+      (route.query.help_url as string)
+      || 'https://docs.github.com/pt/authentication/keeping-your-account-and-data-secure/about-ssh-deploy-keys',
+  )
 </script>

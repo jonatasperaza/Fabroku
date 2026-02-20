@@ -42,11 +42,16 @@
         >
           Atualizar Status
         </v-btn>
+      </div>
+
+      <!-- Botão Diagnosticar problema destacado acima dos logs -->
+      <div class="d-flex justify-end mb-2">
         <v-btn
+          class="diagnose-btn"
           color="error"
           prepend-icon="mdi-lifebuoy"
-          variant="tonal"
-          class="ml-2"
+          size="large"
+          variant="elevated"
           @click="diagnoseAppError"
         >
           Diagnosticar problema
@@ -170,36 +175,6 @@
 
 <script setup lang="ts">
     // Diagnóstico manual de erro
-    async function diagnoseAppError() {
-      if (!appStore.currentApp?.id) return;
-      try {
-        const status = await appStore.fetchAppStatus(String(appStore.currentApp.id));
-        if (
-          status?.state === "FAILURE" &&
-          (status as any).error_type === "DeployKeysDisabled"
-        ) {
-          router.push({
-            path: "/projects/deploy-keys-disabled",
-            query: { help_url: (status as any).help_url || undefined },
-          });
-          return;
-        }
-        if (
-          status?.state === "FAILURE" &&
-          (status as any).error_type === "OrgPermissionDenied"
-        ) {
-          router.push({
-            path: "/projects/org-permission-denied",
-            query: { help_url: (status as any).help_url || undefined },
-          });
-          return;
-        }
-        // Pode adicionar outros diagnósticos aqui
-        alert("Nenhum problema crítico detectado. Veja os logs para mais detalhes.");
-      } catch {
-        alert("Erro ao diagnosticar. Tente novamente.");
-      }
-    }
   import type { Service } from '@/interfaces'
 
   import { onMounted, onUnmounted, ref, watch } from 'vue'
@@ -216,6 +191,36 @@
   import ServicesService from '@/services/services'
   import { useAppStore, useLogStore } from '@/stores'
   import { formatStatus, getStatusColor, getStatusIcon } from '@/utils/status'
+  async function diagnoseAppError () {
+    if (!appStore.currentApp?.id) return
+    try {
+      const status = await appStore.fetchAppStatus(String(appStore.currentApp.id))
+      if (
+        status?.state === 'FAILURE'
+        && (status as any).error_type === 'DeployKeysDisabled'
+      ) {
+        router.push({
+          path: '/projects/deploy-keys-disabled',
+          query: { help_url: (status as any).help_url || undefined },
+        })
+        return
+      }
+      if (
+        status?.state === 'FAILURE'
+        && (status as any).error_type === 'OrgPermissionDenied'
+      ) {
+        router.push({
+          path: '/projects/org-permission-denied',
+          query: { help_url: (status as any).help_url || undefined },
+        })
+        return
+      }
+      // Pode adicionar outros diagnósticos aqui
+      alert('Nenhum problema crítico detectado. Veja os logs para mais detalhes.')
+    } catch {
+      alert('Erro ao diagnosticar. Tente novamente.')
+    }
+  }
 
   const route = useRoute()
   const router = useRouter()
@@ -243,12 +248,35 @@
   const commandOutput = ref('')
   const commandSuccess = ref(true)
 
+  // --- Stream de logs em tempo real ---
+  let logStreamActive = false
+  function shouldStreamLogs () {
+    const status = appStore.currentApp?.status
+    return [
+      'FAILED', 'ERROR', 'STARTING', 'DELETING', 'DEPLOYING',
+    ].includes(status || '')
+  }
+
+  async function startLogStreamIfNeeded () {
+    if (!appStore.currentApp?.task_id || logStreamActive) return
+    if (shouldStreamLogs()) {
+      logStreamActive = true
+      await handleStreamLogs(appStore.currentApp.task_id)
+    }
+  }
+
+  function stopLogStream () {
+    logStreamActive = false
+    // Não há método explícito para parar, mas o componente LogViewer já para o polling
+  }
+
   onMounted(async () => {
     try {
       await appStore.fetchApp(appId)
       if (appStore.currentApp?.id) {
         await logStore.fetchLogsByApp(Number(appStore.currentApp.id))
         await fetchServices()
+        await startLogStreamIfNeeded()
       }
       startTaskPollingIfNeeded()
     } finally {
@@ -268,6 +296,12 @@
       } else {
         stopTaskPolling()
         appStore.clearTaskStatus()
+      }
+      // Stream de logs automático
+      if (shouldStreamLogs()) {
+        startLogStreamIfNeeded()
+      } else {
+        stopLogStream()
       }
     },
   )

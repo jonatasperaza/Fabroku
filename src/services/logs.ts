@@ -45,7 +45,7 @@ class LogsService {
   async streamLogs (taskId: string, afterId?: number): Promise<AppLog[]> {
     const params = afterId ? `?after=${afterId}` : ''
     const response = await apiClient.get(`/logs/stream/${taskId}/${params}`)
-    return response.data
+    return response.data.logs ?? response.data
   }
 }
 

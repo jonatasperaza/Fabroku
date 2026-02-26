@@ -109,19 +109,6 @@
             @remove="removeEnvVar"
           />
 
-          <AppDatabaseCard
-            :app-name="appStore.currentApp.name_dokku ?? undefined"
-            :creating="creatingDatabase"
-            :deleting-id="deletingService"
-            :linking="linkingService"
-            :unlinking-id="unlinkingService"
-            :services="appServices"
-            @create="handleCreateDatabase"
-            @delete="handleDeleteService"
-            @link="openLinkDialog"
-            @unlink="handleUnlinkService"
-          />
-
           <AppConsoleCard
             :output="commandOutput"
             :running="runningCommand"

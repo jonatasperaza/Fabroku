@@ -18,17 +18,24 @@
     <v-card max-width="600" variant="outlined">
       <v-card-title>Banco PostgreSQL</v-card-title>
       <v-card-text>
+        <v-select
+          v-model="serviceType"
+          :items="serviceTypeOptions"
+          item-disabled="disabled"
+          item-title="label"
+          item-value="value"
+          label="Tipo de serviço"
+          variant="outlined"
+        />
         <v-text-field
           v-model="name"
+          class="mt-4"
           label="Nome do serviço (opcional)"
           placeholder="meu-banco"
           variant="outlined"
           hint="Deixe vazio para gerar automaticamente"
           persistent-hint
         />
-        <v-alert class="mt-4" color="info" density="compact" variant="tonal">
-          Apenas PostgreSQL está disponível no momento. Redis será habilitado em breve.
-        </v-alert>
       </v-card-text>
       <v-card-actions>
         <v-btn variant="text" @click="$router.push(`/projects/${projectId}/services`)">
@@ -85,6 +92,11 @@
 
   const projectStore = useProjectStore()
 
+  const serviceTypeOptions = [
+    { value: 'postgres', label: 'PostgreSQL' },
+    { value: 'redis', label: 'Redis', disabled: true },
+  ]
+  const serviceType = ref('postgres')
   const name = ref('')
   const creating = ref(false)
   const createdService = ref<Service | null>(null)
@@ -107,7 +119,7 @@
     try {
       const service = await ServicesService.createService({
         project: projectStore.currentProject.id,
-        service_type: 'postgres',
+        service_type: serviceType.value,
         name: name.value || undefined,
       })
       createdService.value = service

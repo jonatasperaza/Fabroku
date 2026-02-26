@@ -202,10 +202,19 @@
   const viewMode = ref<'summary' | 'verbose'>('summary')
   const expandedGroups = ref<Set<string>>(new Set())
 
-  const ERROR_PATTERNS = /error|failed|fatal|denied|cannot|couldn't|could not|exception|! /i
+  const ERROR_PATTERNS = /\berror\b|failed|fatal|denied|cannot|couldn't|could not|exception/i
+  const WARNING_PATTERNS = /\bwarning\b|! Warning/i
 
   function isErrorLine (text: string): boolean {
+    if (WARNING_PATTERNS.test(text)) return false
+    // Linhas "! " do Dokku são warnings genéricos, não erros
+    if (text.startsWith('! ') && !ERROR_PATTERNS.test(text)) return false
     return ERROR_PATTERNS.test(text)
+  }
+
+  function isWarningLine (text: string): boolean {
+    if (WARNING_PATTERNS.test(text)) return true
+    return text.startsWith('! ') && !ERROR_PATTERNS.test(text)
   }
 
   /**
@@ -227,15 +236,9 @@
         for (const line of msg.split('\n')) {
           const trimmed = line.trim()
           if (!trimmed) continue
-          if (
-            /^(ERROR:|fatal:|! )/i.test(trimmed)
-            || /permission denied/i.test(trimmed)
-            || /build failed/i.test(trimmed)
-            || /could not read from remote/i.test(trimmed)
-          ) {
-            if (!errors.includes(trimmed)) {
-              errors.push(trimmed)
-            }
+          if (isWarningLine(trimmed)) continue
+          if (isErrorLine(trimmed) && !errors.includes(trimmed)) {
+            errors.push(trimmed)
           }
         }
       }
@@ -271,6 +274,7 @@
             if (!trimmed) continue
             const isStep = trimmed.startsWith('----->') || trimmed.startsWith('=====>')
             const isErr = isErrorLine(trimmed)
+            const isWarn = isWarningLine(trimmed)
 
             if (isStep) {
               lines.push({
@@ -281,14 +285,32 @@
                 text: trimmed.replace(/^[-=]+>\s*/, ''),
                 cls: 'log-line--step',
               })
+            } else if (isErr) {
+              lines.push({
+                type: 'line',
+                time: '',
+                prefix: '!',
+                prefixCls: 'log-line__prefix--error',
+                text: trimmed,
+                cls: 'log-line--error',
+              })
+            } else if (isWarn) {
+              lines.push({
+                type: 'line',
+                time: '',
+                prefix: '⚠',
+                prefixCls: 'log-line__prefix--warn',
+                text: trimmed,
+                cls: 'log-line--warn',
+              })
             } else {
               lines.push({
                 type: 'line',
                 time: '',
-                prefix: isErr ? '!' : '',
-                prefixCls: isErr ? 'log-line__prefix--error' : '',
+                prefix: '',
+                prefixCls: '',
                 text: trimmed,
-                cls: isErr ? 'log-line--error' : 'log-line--dokku',
+                cls: 'log-line--dokku',
               })
             }
           }
@@ -306,9 +328,9 @@
 
           const isStep = trimmed.startsWith('----->') || trimmed.startsWith('=====>')
           const isErr = isErrorLine(trimmed)
+          const isWarn = isWarningLine(trimmed)
 
           if (isStep) {
-            // Fecha grupo anterior se existir
             if (currentGroupLabel && currentChildren.length > 0) {
               const gid = `g-${groupIndex++}`
               if (groupHasErrors) expandedGroups.value.add(gid)
@@ -331,7 +353,6 @@
           } else {
             if (isErr) groupHasErrors = true
 
-            // No modo summary, só mostra linhas de erro fora do grupo
             if (isErr) {
               currentChildren.push({
                 type: 'line',
@@ -340,6 +361,15 @@
                 prefixCls: 'log-line__prefix--error',
                 text: trimmed,
                 cls: 'log-line--error',
+              })
+            } else if (isWarn) {
+              currentChildren.push({
+                type: 'line',
+                time: '',
+                prefix: '⚠',
+                prefixCls: 'log-line__prefix--warn',
+                text: trimmed,
+                cls: 'log-line--warn',
               })
             } else {
               currentChildren.push({

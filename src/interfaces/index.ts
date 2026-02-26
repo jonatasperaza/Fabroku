@@ -34,7 +34,7 @@ interface App {
   project: Project['id']
   created_at?: string
   updated_at?: string
-  status?: 'STOPPED' | 'RUNNING' | 'ERROR' | 'STARTING' | 'DELETING'
+  status?: 'STOPPED' | 'RUNNING' | 'ERROR' | 'STARTING' | 'DELETING' | 'DEPLOYING' | 'RESTARTING' | 'STOPPING' | 'FAILED'
   domain?: string | null
   port?: number | null
   variables?: Record<string, string> | object

@@ -50,12 +50,13 @@
           <v-card
             v-if="
               appStore.currentApp.task_id &&
-                (appStore.currentApp.status === 'STARTING' ||
-                  appStore.currentApp.status === 'DELETING')
+                ['STARTING', 'DELETING', 'DEPLOYING'].includes(appStore.currentApp.status ?? '')
             "
             class="mb-4"
             :color="
-              appStore.currentApp.status === 'DELETING' ? 'pink' : 'primary'
+              appStore.currentApp.status === 'DELETING' ? 'pink'
+                : appStore.currentApp.status === 'DEPLOYING' ? 'orange'
+                  : 'primary'
             "
             variant="tonal"
           >
@@ -64,7 +65,9 @@
               {{
                 appStore.currentApp.status === "DELETING"
                   ? "Deletando App..."
-                  : "Criando App..."
+                  : appStore.currentApp.status === "DEPLOYING"
+                    ? "Fazendo deploy..."
+                    : "Criando App..."
               }}
             </v-card-title>
             <v-card-text>
@@ -278,7 +281,7 @@
   watch(
     () => appStore.currentApp?.status,
     newStatus => {
-      if (newStatus === 'STARTING' || newStatus === 'DELETING') {
+      if (newStatus === 'STARTING' || newStatus === 'DELETING' || newStatus === 'DEPLOYING') {
         startTaskPollingIfNeeded()
       } else {
         stopTaskPolling()
@@ -296,7 +299,7 @@
   // --- Task Polling ---
   function startTaskPollingIfNeeded () {
     const app = appStore.currentApp
-    if (!app?.task_id || (app.status !== 'STARTING' && app.status !== 'DELETING'))
+    if (!app?.task_id || !['STARTING', 'DELETING', 'DEPLOYING'].includes(app.status ?? ''))
       return
     stopTaskPolling()
     pollTaskStatus()

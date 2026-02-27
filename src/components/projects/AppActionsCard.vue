@@ -99,22 +99,37 @@
   </v-card>
 
   <!-- Dialog Confirmar Exclusão -->
-  <v-dialog v-model="confirmDelete" max-width="400">
+  <v-dialog v-model="confirmDelete" max-width="400" persistent>
     <v-card>
       <v-card-title class="text-error">
         <v-icon class="mr-2">mdi-alert</v-icon>
         Confirmar Exclusão
       </v-card-title>
       <v-card-text>
-        Tem certeza que deseja deletar o app
-        <strong>{{ appName }}</strong>?
-        <br>
-        <span class="text-error">Esta ação não pode ser desfeita.</span>
+        <p class="mb-3">
+          Para deletar o app <strong>{{ appName }}</strong>, digite o nome abaixo:
+        </p>
+        <v-text-field
+          v-model="deleteConfirmName"
+          density="compact"
+          hide-details
+          placeholder="Nome do app"
+          variant="outlined"
+          @keyup.enter="canConfirmDelete && handleDelete()"
+        />
+        <p class="text-error text-caption mt-2">
+          Esta ação não pode ser desfeita.
+        </p>
       </v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn variant="text" @click="confirmDelete = false">Cancelar</v-btn>
-        <v-btn color="error" :loading="deleting" @click="handleDelete">
+        <v-btn variant="text" @click="closeDeleteDialog">Cancelar</v-btn>
+        <v-btn
+          color="error"
+          :disabled="!canConfirmDelete"
+          :loading="deleting"
+          @click="handleDelete"
+        >
           Deletar
         </v-btn>
       </v-card-actions>
@@ -123,9 +138,9 @@
 </template>
 
 <script setup lang="ts">
-  import { ref } from 'vue'
+  import { computed, ref, watch } from 'vue'
 
-  defineProps<{
+  const props = defineProps<{
     status?: string
     domain?: string | null
     appName?: string
@@ -144,9 +159,27 @@
   }>()
 
   const confirmDelete = ref(false)
+  const deleteConfirmName = ref('')
+
+  const canConfirmDelete = computed(() => {
+    return props.appName
+      ? deleteConfirmName.value.trim() === props.appName
+      : false
+  })
+
+  function closeDeleteDialog () {
+    confirmDelete.value = false
+    deleteConfirmName.value = ''
+  }
+
+  watch(confirmDelete, (open) => {
+    if (open) deleteConfirmName.value = ''
+  })
 
   function handleDelete () {
+    if (!canConfirmDelete.value) return
     emit('delete')
+    closeDeleteDialog()
   }
 
   function getAppUrl (domain?: string | null): string {

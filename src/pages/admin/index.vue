@@ -7,6 +7,68 @@
       </div>
     </div>
 
+    <!-- Uso de espaço dos bancos -->
+    <v-card class="mb-6">
+      <v-card-title class="d-flex align-center">
+        <v-icon class="mr-2">mdi-database</v-icon>
+        Uso de espaço dos bancos Postgres
+        <v-btn
+          v-if="storageLoading"
+          class="ml-2"
+          icon
+          size="small"
+        >
+          <v-progress-circular indeterminate size="20" width="2" />
+        </v-btn>
+        <v-btn
+          v-else
+          class="ml-2"
+          icon
+          size="small"
+          variant="text"
+          @click="fetchStorageUsage"
+        >
+          <v-icon>mdi-refresh</v-icon>
+        </v-btn>
+      </v-card-title>
+      <v-card-text>
+        <div v-if="storageError" class="text-error text-caption">
+          {{ storageError }}
+        </div>
+        <template v-else>
+          <p class="text-h6 mb-3">
+            Total: <strong>{{ storageUsage?.total_formatted ?? '-' }}</strong>
+          </p>
+          <v-table v-if="storageUsage?.services?.length" density="compact">
+            <thead>
+              <tr>
+                <th>Projeto</th>
+                <th>App</th>
+                <th>Serviço</th>
+                <th class="text-right">Tamanho</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="s in storageUsage.services"
+                :key="s.service_id"
+              >
+                <td>{{ s.project_name }}</td>
+                <td>{{ s.app_name ?? '-' }}</td>
+                <td>
+                  <code class="text-caption">{{ s.container_name ?? s.service_name }}</code>
+                </td>
+                <td class="text-right">{{ s.size_formatted }}</td>
+              </tr>
+            </tbody>
+          </v-table>
+          <p v-else class="text-grey text-caption">
+            Nenhum banco Postgres encontrado.
+          </p>
+        </template>
+      </v-card-text>
+    </v-card>
+
     <!-- Filtros -->
     <v-chip-group v-model="filterSelection" class="mb-4" mandatory>
       <v-chip value="all">Todos</v-chip>
@@ -83,15 +145,34 @@
 </template>
 
 <script setup lang="ts">
+  import type { StorageUsageResponse } from '@/services/admin'
+
   import { computed, onMounted, ref } from 'vue'
 
+  import AdminService from '@/services/admin'
   import { useProjectStore } from '@/stores'
 
   const projectStore = useProjectStore()
   const filterSelection = ref('all')
+  const storageUsage = ref<StorageUsageResponse | null>(null)
+  const storageLoading = ref(false)
+  const storageError = ref<string | null>(null)
+
+  async function fetchStorageUsage () {
+    storageLoading.value = true
+    storageError.value = null
+    try {
+      storageUsage.value = await AdminService.getStorageUsage()
+    } catch (e) {
+      storageError.value = e instanceof Error ? e.message : 'Erro ao carregar uso de espaço'
+    } finally {
+      storageLoading.value = false
+    }
+  }
 
   onMounted(() => {
     projectStore.fetchProjects()
+    fetchStorageUsage()
   })
 
   const filteredProjects = computed(() => {

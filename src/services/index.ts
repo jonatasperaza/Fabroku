@@ -1,3 +1,4 @@
+export { default as AdminService } from './admin'
 export { default as AppsService } from './apps'
 export { default as AuthService } from './auth'
 export { default as GitService } from './git'

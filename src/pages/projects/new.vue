@@ -104,16 +104,6 @@
             </v-list-item>
           </template>
         </v-autocomplete>
-
-        <v-alert
-          class="mt-2"
-          density="compact"
-          icon="mdi-information"
-          type="info"
-          variant="tonal"
-        >
-          Você será adicionado automaticamente ao projeto.
-        </v-alert>
       </v-card-text>
 
       <v-card-actions class="pa-6 pt-0">

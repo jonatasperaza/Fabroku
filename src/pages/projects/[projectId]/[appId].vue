@@ -109,16 +109,6 @@
             @remove="removeEnvVar"
           />
 
-          <AppConsoleCard
-            :output="commandOutput"
-            :running="runningCommand"
-            :success="commandSuccess"
-            @clear="
-              commandOutput = '';
-              commandSuccess = true;
-            "
-            @run="handleRunCommand"
-          />
         </v-col>
 
         <v-col cols="12" md="4">
@@ -179,8 +169,13 @@
         <AppLogsCard
           :loading="logsLoading"
           :logs="displayLogs"
+          :output="commandOutput"
+          :running="runningCommand"
+          :success="commandSuccess"
           :task-id="deployTaskId"
           :title="logsTitle"
+          @clear="handleClearCommand"
+          @run="handleRunCommand"
           @stream-logs="handleStreamLogs"
         />
       </v-col>
@@ -196,7 +191,6 @@
   import { useRoute, useRouter } from 'vue-router'
 
   import AppActionsCard from '@/components/projects/AppActionsCard.vue'
-  import AppConsoleCard from '@/components/projects/AppConsoleCard.vue'
   import AppDatabaseCard from '@/components/projects/AppDatabaseCard.vue'
   import AppDetailsCard from '@/components/projects/AppDetailsCard.vue'
   import AppEnvVarsCard from '@/components/projects/AppEnvVarsCard.vue'
@@ -503,6 +497,11 @@
   }
 
   // --- Console / Comandos ---
+  function handleClearCommand () {
+    commandOutput.value = ''
+    commandSuccess.value = true
+  }
+
   async function handleRunCommand (command: string) {
     if (!command.trim() || !appStore.currentApp?.id) return
     runningCommand.value = true

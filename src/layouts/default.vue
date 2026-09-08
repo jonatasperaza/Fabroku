@@ -84,13 +84,27 @@
 </template>
 
 <script setup lang="ts">
-  import { onMounted } from 'vue'
+  import { onMounted, onUnmounted, watch } from 'vue'
   import UserAvatar from '@/components/ui/UserAvatar.vue'
+  import { useWebMcpTools } from '@/composables/useWebMcpTools'
   import { useAuthStore } from '@/stores'
   const authStore = useAuthStore()
+  const webMcpTools = useWebMcpTools()
 
   onMounted(() => {
     authStore.checkAuth()
+  })
+
+  watch(() => authStore.isAuthenticated, isAuthenticated => {
+    if (isAuthenticated) {
+      webMcpTools.start()
+    } else {
+      webMcpTools.stop()
+    }
+  })
+
+  onUnmounted(() => {
+    webMcpTools.stop()
   })
 
   async function handleLogout () {

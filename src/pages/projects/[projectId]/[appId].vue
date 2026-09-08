@@ -376,6 +376,7 @@
     appId,
     setTaskId: taskId => {
       if (appStore.currentApp) appStore.currentApp.task_id = taskId
+      startTaskLogStream()
     },
   })
 

@@ -521,6 +521,7 @@
             Todos os comandos <code>fabroku run *</code> fazem polling do
             status a cada 3s por até 12 minutos antes de reportar timeout.
           </v-alert>
+
           <v-card class="mb-4" variant="tonal">
             <v-card-title class="text-subtitle-1">
               <code>fabroku run migrate</code>
@@ -796,6 +797,83 @@
       </v-card>
     </section>
 
+    <!-- MCP remoto -->
+    <section :id="'mcp-remoto'" class="mb-6">
+      <v-card>
+        <v-card-title class="d-flex align-center">
+          <v-icon class="mr-2" color="primary">mdi-cloud-braces</v-icon>
+          MCP remoto (sem instalar nada)
+        </v-card-title>
+
+        <v-card-text>
+          <p class="mb-3">
+            O <code>fabroku mcp</code> acima só funciona em ferramentas de IA
+            que conseguem rodar um programa no seu computador (como o Claude
+            Desktop). Se você usa o Claude ou o Le Chat direto pelo
+            navegador, existe uma versão que não precisa instalar nada: você
+            só cola um link.
+          </p>
+
+          <v-alert class="mb-4" density="compact" type="info" variant="tonal">
+            Essa versão só consulta informações — não inicia, para, reinicia,
+            faz redeploy nem apaga nenhum app.
+          </v-alert>
+
+          <p class="font-weight-medium mb-2">1. Pegue seu link de acesso</p>
+
+          <p class="mb-2 text-body-2">
+            Depois de rodar <code>fabroku login</code>, sua chave de acesso e
+            o endereço da API ficam salvos neste arquivo:
+          </p>
+
+          <CodeBlock code="cat ~/.fabroku/config.json" />
+
+          <p class="mt-2 mb-4 text-body-2">
+            Junte os dois campos que aparecerem: <code>endereço_da_api/api/mcp/sua_chave/</code>
+          </p>
+
+          <p class="font-weight-medium mb-2">2. Cole no seu assistente de IA</p>
+
+          <p class="mb-4 text-body-2">
+            No <strong>Claude</strong> (site ou app): Configurações →
+            Conectores → Adicionar conector personalizado → cole o link. Não
+            precisa preencher mais nada. No <strong>Le Chat</strong>: mesma
+            ideia, no campo de conector MCP personalizado.
+          </p>
+
+          <v-divider class="my-4" />
+
+          <p class="font-weight-medium mb-2">O que a IA consegue ver:</p>
+
+          <v-row>
+            <v-col
+              v-for="tool in mcpRemoteTools"
+              :key="tool.name"
+              cols="12"
+              md="6"
+            >
+              <v-card height="100%" variant="outlined">
+                <v-card-title class="text-subtitle-2 d-flex align-center">
+                  <v-icon class="mr-2" color="info" size="18">mdi-eye-outline</v-icon>
+                  {{ tool.label }}
+                </v-card-title>
+
+                <v-card-text class="text-body-2">
+                  {{ tool.desc }}
+                </v-card-text>
+              </v-card>
+            </v-col>
+          </v-row>
+
+          <v-alert class="mt-4" density="compact" type="warning" variant="tonal">
+            Esse link vale como uma senha: quem tiver acesso a ele consegue
+            ver os status e logs dos seus apps. Não compartilhe. Se vazar,
+            peça pra um administrador do Fabroku revogar sua chave.
+          </v-alert>
+        </v-card-text>
+      </v-card>
+    </section>
+
     <!-- Workflow Completo -->
     <section :id="'workflow'" class="mb-6">
       <v-card>
@@ -1034,6 +1112,7 @@
     { id: 'db', label: 'Banco de Dados', icon: 'mdi-database-lock' },
     { id: 'webhook', label: 'Webhook', icon: 'mdi-webhook' },
     { id: 'mcp', label: 'MCP', icon: 'mdi-robot-outline' },
+    { id: 'mcp-remoto', label: 'MCP remoto', icon: 'mdi-cloud-braces' },
     { id: 'workflow', label: 'Workflow', icon: 'mdi-map-marker-path' },
     { id: 'troubleshooting', label: 'Troubleshooting', icon: 'mdi-lifebuoy' },
   ]
@@ -1359,6 +1438,13 @@ args = ["mcp"]`
       desc: 'Publica o código já commitado e enviado ao repositório remoto.',
       mutates: true,
     },
+  ]
+
+  const mcpRemoteTools = [
+    { name: 'list_apps', label: 'Lista de apps', desc: 'Nome, status, domínio, branch e projeto de cada app seu.' },
+    { name: 'get_app_status', label: 'Status de um app', desc: 'Se está rodando, parado, em deploy, e o progresso da última operação.' },
+    { name: 'get_app_processes', label: 'Processos do app', desc: 'Quantas réplicas de cada processo estão ativas.' },
+    { name: 'get_runtime_logs', label: 'Logs recentes', desc: 'Últimas linhas do que o app imprimiu (saída do container).' },
   ]
 
   const mcpRedeploySteps = [

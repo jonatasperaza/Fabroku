@@ -19,7 +19,9 @@ fabroku deploy
 
 ## MCP para agentes de IA
 
-`fabroku mcp` inicia um servidor MCP local (stdio) com as mesmas permissões da CLI: listar projetos/apps/serviços, consultar status e logs, rodar migrations e disparar redeploy do código já commitado e enviado ao repositório remoto. Detalhes e configuração em `/llms-full.txt`.
+`fabroku mcp` inicia um servidor MCP local (stdio) com as mesmas permissões da CLI: listar projetos/apps/serviços, consultar status e logs, rodar migrations e disparar redeploy do código já commitado e enviado ao repositório remoto.
+
+Para clientes que não rodam processo local (Claude.ai web, Le Chat), existe também um servidor MCP remoto, somente leitura, acessível por uma URL própria com a mesma chave de acesso do `fabroku login`. Detalhes de ambos em `/llms-full.txt`.
 
 ## Notas para agentes
 

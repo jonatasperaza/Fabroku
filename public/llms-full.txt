@@ -362,6 +362,34 @@ Ferramentas disponíveis:
 - `fabroku_run_migrate` — Executa migrations Django usando um manage.py validado.
 - `fabroku_redeploy` — Publica o código já commitado e enviado ao repositório remoto.
 
+## MCP remoto (sem CLI local)
+
+`fabroku mcp` exige rodar `fabroku` na própria máquina — não funciona em clientes MCP que não sabem executar processo local, como Claude.ai no navegador ou Le Chat. Para esses casos existe um segundo servidor MCP, **hospedado pelo backend do Fabroku** em `/api/mcp/<chave>/`, com um subconjunto **somente leitura** das ferramentas.
+
+A `<chave>` é a mesma chave de acesso criada por `fabroku login`. Para pegar a URL completa:
+
+```bash
+# depois de `fabroku login`, a chave e o endereço da API ficam salvos em ~/.fabroku/config.json
+cat ~/.fabroku/config.json
+# monte: <endereço da API>/api/mcp/<chave>/
+```
+
+Conectando no Claude (web ou Desktop), plano Free permite 1 conector custom:
+
+1. Configurações → Conectores → Adicionar conector personalizado.
+2. Cole a URL montada acima (`https://.../api/mcp/<chave>/`).
+3. Não preencha OAuth Client ID/Secret — a chave já está na URL.
+
+Le Chat (Mistral) segue o mesmo princípio: cole a mesma URL no campo de conector MCP customizado.
+
+Ferramentas disponíveis (somente leitura — nenhuma inicia, para, reinicia, faz redeploy ou apaga nada):
+- `list_apps` — Lista os apps do usuário dono da chave, com status, domínio, branch e projeto.
+- `get_app_status` — Status atual e progresso da última operação (criação/deploy) de um app pelo id.
+- `get_app_processes` — Escala de processos (dynos) de um app pelo id — réplicas desejadas x ativas.
+- `get_runtime_logs` — Últimas linhas de log de runtime (stdout/stderr do container) de um app pelo id.
+
+`fabroku logout` só apaga a chave salva no seu computador — ela continua valendo no servidor. Se a URL vazar, peça pra um administrador do Fabroku revogar essa chave (fazer `fabroku login` de novo cria uma chave nova, mas não invalida a antiga sozinho). Trate a URL como uma senha — quem tiver acesso a ela consegue ver status e logs dos seus apps.
+
 ## Workflow Completo de Deploy
 
 Passo a passo para fazer deploy de uma aplicação do zero:
